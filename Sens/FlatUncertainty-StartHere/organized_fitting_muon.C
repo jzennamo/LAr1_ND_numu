@@ -215,38 +215,7 @@ int multiple_detector_fit()
 	  temp_file.Close();
 	  counter++;
 	}
-	
-	if (use470m){
-	  std::string temp_name ="../MatrixFiles/combined_ntuple_470m_nu_processed_numu_Joseph_Smeared.root";
 
-	  TFile temp_file(temp_name.c_str());
-	  TH1D *NULL_470;
-	  NULL_470 = (TH1D*)(temp_file.Get("NumuCC"));      
-
-	  nbinsE = NULL_470->GetNbinsX();
-
-	  for(int i = 1; i <= nbinsE; i++){
-	    NULLVec[counter].push_back(NULL_470->GetBinContent(i));
-	  }
-
-	  for(int dm = 0; dm <= npoints; dm++){
-	    TH1D *OSC_470;
-	    std::string dmpoint = std::to_string(dm);
-	    std::string name = "Osc_";
-	    name = name+dmpoint;
-	    OSC_470 = (TH1D*)(temp_file.Get(name.c_str()));
-
-	    for(int i = 1; i <= nbinsE; i++){	      
-	      OscVec[counter][dm].push_back(OSC_470->GetBinContent(i));
-	    }
-	    delete OSC_470;
-	  }
-
-	  delete NULL_470;
-	  temp_file.Close();
-	  counter++;
-	}
-	
 	if (use700m) {
 	  std::string temp_name = "../MatrixFiles/combined_ntuple_600m_onaxis_nu_processed_numu_Joseph_Smeared.root";
         
@@ -317,16 +286,6 @@ int multiple_detector_fit()
         TH1D* ND_lowm_highs = new TH1D("ND_lowm_highs", "", nbinsE, bins);
         TH1D* ND_highm_highs = new TH1D("ND_highm_highs", "", nbinsE, bins);
 
-	TH1D* MB_null_lmls = new TH1D("MB_null_lmls", "", nbinsE, bins);
-	TH1D* MB_null_hmls = new TH1D("MB_null_hmls", "", nbinsE, bins);
-	TH1D* MB_null_lmhs = new TH1D("MB_null_lmhs", "", nbinsE, bins);
-	TH1D* MB_null_hmhs = new TH1D("MB_null_hmhs", "", nbinsE, bins);
-
-	TH1D* MB_lowm_lows = new TH1D("MB_lowm_lows", "", nbinsE, bins);
-	TH1D* MB_highm_lows = new TH1D("MB_highm_lows", "", nbinsE, bins);
-	TH1D* MB_lowm_highs = new TH1D("MB_lowm_highs", "", nbinsE, bins);
-	TH1D* MB_highm_highs = new TH1D("MB_highm_highs", "", nbinsE, bins);
-	
 	TH1D* FD_null_lmls = new TH1D("FD_null_lmls", "", nbinsE, bins);
 	TH1D* FD_null_hmls = new TH1D("FD_null_hmls", "", nbinsE, bins);
 	TH1D* FD_null_lmhs = new TH1D("FD_null_lmhs", "", nbinsE, bins);
@@ -455,67 +414,47 @@ int multiple_detector_fit()
 	      
 	      //To do...swich the scale factor. We measure the TEST and model the NULL, means I have to build another set of NULL_hists which are scaled to the prediction.
 
-	      if((use100m && Edecbin < nbinsE) && dm2 == 255 && sint == 255){    
+	      if(Edecbin < nbinsE && dm2 == 255 && sint == 255){    
 		ND_lowm_lows->SetBinContent(Edecbin+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1))); 
 		ND_null_lmls->SetBinContent(Edecbin+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 	      }// ND_null_lmls->SetBinError(Edecbin+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if((use100m && Edecbin < nbinsE) && dm2 ==  347 && sint == 255){   
+	      if(Edecbin < nbinsE && dm2 ==  205 && sint == 255){   
 		ND_highm_lows->SetBinContent(Edecbin+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 		ND_null_hmls->SetBinContent(Edecbin+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 	      }//ND_null_hmls->SetBinError(Edecbin+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if((use100m && Edecbin < nbinsE) && dm2 == 206 && sint == 378){  
+	      if(Edecbin < nbinsE && dm2 == 206 && sint == 378){  
 		ND_lowm_highs->SetBinContent(Edecbin+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 		ND_null_lmhs->SetBinContent(Edecbin+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 	      }//ND_null_lmhs->SetBinError(Edecbin+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if((use100m && Edecbin < nbinsE) && dm2 ==  347 && sint == 378){
+	      if(Edecbin < nbinsE && dm2 ==  205 && sint == 378){
 		ND_highm_highs->SetBinContent(Edecbin+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 		ND_null_hmhs->SetBinContent(Edecbin+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 	      }//ND_null_hmhs->SetBinError(Edecbin+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
-	      
-	      
-	      if((use470m && ((use100m && (Edecbin >= nbinsE && Edecbin < nbinsE*2)) || (!use100m && (Edecbin < nbinsE)))) && dm2 == 255 && sint == 255){    
-		MB_lowm_lows->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
-		MB_null_lmls->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
-	      }//MB_null_lmls->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if((use470m && ((use100m && (Edecbin >= nbinsE && Edecbin < nbinsE*2)) || (!use100m && (Edecbin < nbinsE)))) && dm2 ==  347 && sint == 255){ 
-		MB_highm_lows->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
-		MB_null_hmls->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
-	      }//MB_null_hmls->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
-
-	      if((use470m && ((use100m && (Edecbin >= nbinsE && Edecbin < nbinsE*2)) || (!use100m && (Edecbin < nbinsE)))) && dm2 == 255 && sint == 378){ 
-		MB_lowm_highs->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
-		MB_null_lmhs->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
-	      }//MB_null_lmhs->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
-
-	      if((use470m && ((use100m && (Edecbin >= nbinsE && Edecbin < nbinsE*2)) || (!use100m && (Edecbin < nbinsE)))) && dm2 ==  347 && sint == 378){  
-		MB_highm_highs->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
-		MB_null_hmhs->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
-	      }//MB_null_hmhs->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
-	      
-	      
-	      if((use700 && (Edecbin >= nbinsE*(nL-1) && Edecbin < nbinsE*nL)) && dm2 == 255 && sint == 255){    
+	      if(Edecbin >= nbinsE && Edecbin < 2*nbinsE && dm2 == 255 && sint == 255){    
 		FD_lowm_lows->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 		FD_null_lmls->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 	      }//FD_null_lmls->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if((use700 && (Edecbin >= nbinsE*(nL-1) && Edecbin < nbinsE*nL)) && dm2 ==  347 && sint == 255){ 
+	      if(Edecbin >= nbinsE && Edecbin < 2*nbinsE && dm2 ==  205 && sint == 255){ 
 		FD_highm_lows->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 		FD_null_hmls->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 	      }//FD_null_hmls->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if((use700 && (Edecbin >= nbinsE*(nL-1) && Edecbin < nbinsE*nL)) && dm2 == 255 && sint == 378){ 
+	      if(Edecbin >= nbinsE && Edecbin < 2*nbinsE && dm2 == 255 && sint == 378){ 
 		FD_lowm_highs->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 		FD_null_lmhs->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 	      }//FD_null_lmhs->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if((use700 && (Edecbin >= nbinsE*(nL-1) && Edecbin < nbinsE*nL)) && dm2 ==  347 && sint == 378){  
+	      if(Edecbin >= nbinsE && Edecbin < 2*nbinsE && dm2 ==  205 && sint == 378){  
 		FD_highm_highs->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 		FD_null_hmhs->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 	      }//FD_null_hmhs->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
+
+		
 
 
 	    }//Sum over all detectors and energies to determine the chi2 for that osc. point	      
