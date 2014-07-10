@@ -366,7 +366,7 @@ int multiple_detector_fit()
 	  DMpoint = pow(10., (TMath::Log10(dm2min)+ (dm2 * (1./npoints))*TMath::Log10(dm2max/dm2min)) );
 	  
 	  if(dm2 == 255) low_DM2 =  DMpoint;
-	  if(dm2 ==  347) high_DM2 =  DMpoint;
+	  if(dm2 ==  205) high_DM2 =  DMpoint;
 
 		  
 	  for(int sint = 0; sint <= npoints; sint++){
@@ -374,7 +374,7 @@ int multiple_detector_fit()
 	    sin22th = pow(10., (TMath::Log10(sin22thmin)+ (sint * (1./npoints))*TMath::Log10(sin22thmax/sin22thmin)));
 	    
 	   if(sint == 255 && dm2 == 255) low_Sin2theta = sin22th;
-	   if(sint == 378 && dm2 ==  347) high_Sin2theta = sin22th;
+	   if(sint == 378 && dm2 ==  205) high_Sin2theta = sin22th;
 	    
 	    
 	    chisq = 0.0;
@@ -419,7 +419,7 @@ int multiple_detector_fit()
 		ND_null_lmls->SetBinContent(Edecbin+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 	      }// ND_null_lmls->SetBinError(Edecbin+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if(Edecbin < nbinsE && dm2 ==  347 && sint == 255){   
+	      if(Edecbin < nbinsE && dm2 ==  205 && sint == 255){   
 		ND_highm_lows->SetBinContent(Edecbin+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 		ND_null_hmls->SetBinContent(Edecbin+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 	      }//ND_null_hmls->SetBinError(Edecbin+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
@@ -429,7 +429,7 @@ int multiple_detector_fit()
 		ND_null_lmhs->SetBinContent(Edecbin+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 	      }//ND_null_lmhs->SetBinError(Edecbin+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if(Edecbin < nbinsE && dm2 ==  347 && sint == 378){
+	      if(Edecbin < nbinsE && dm2 ==  205 && sint == 378){
 		ND_highm_highs->SetBinContent(Edecbin+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 		ND_null_hmhs->SetBinContent(Edecbin+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin+1)));
 	      }//ND_null_hmhs->SetBinError(Edecbin+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
@@ -439,7 +439,7 @@ int multiple_detector_fit()
 		FD_null_lmls->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 	      }//FD_null_lmls->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if(Edecbin >= nbinsE && Edecbin < 2*nbinsE && dm2 ==  347 && sint == 255){ 
+	      if(Edecbin >= nbinsE && Edecbin < 2*nbinsE && dm2 ==  205 && sint == 255){ 
 		FD_highm_lows->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 		FD_null_hmls->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 	      }//FD_null_hmls->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
@@ -449,7 +449,7 @@ int multiple_detector_fit()
 		FD_null_lmhs->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 	      }//FD_null_lmhs->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
 
-	      if(Edecbin >= nbinsE && Edecbin < 2*nbinsE && dm2 ==  347 && sint == 378){  
+	      if(Edecbin >= nbinsE && Edecbin < 2*nbinsE && dm2 ==  205 && sint == 378){  
 		FD_highm_highs->SetBinContent(Edecbin-nbinsE+1,predictioni/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 		FD_null_hmhs->SetBinContent(Edecbin-nbinsE+1,cvi/(Ratio1->GetXaxis()->GetBinWidth(Edecbin-nbinsE+1)));
 	      }//FD_null_hmhs->SetBinError(Edecbin-nbinsE+1+1,1/sqrt((*cov)(Edecbin+1,Edecbin+1)));}
@@ -489,7 +489,7 @@ int multiple_detector_fit()
 	TH2D* hr1=new TH2D("hr1","hr1",500,sin22thmin*10,sin22thmax,500,dm2min+0.0001,dm2max);
 	hr1->Reset();
 	hr1->SetFillColor(0);
-	hr1->SetTitle(";sin^{2}2#theta_{#mu#mu};#Deltam_{41}^{2} [eV^{2}]");
+	hr1->SetTitle(";sin^{2}2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}};#Deltam_{41}^{2} [eV^{2}]");
 	hr1->GetXaxis()->SetTitleOffset(1.2);
 	hr1->GetYaxis()->SetTitleOffset(1.2);
 	hr1->GetXaxis()->SetTitleFont(62);
@@ -623,41 +623,55 @@ int multiple_detector_fit()
 	ND_lowm_lows->SetMarkerSize(1.5);
 	//	ND_lowm_lows->Draw("p1 same");
 
+
+        TLatex *tex_pre = new TLatex(.6,.92,"PRELIMINARY");
+	tex_pre->SetNDC();
+        tex_pre->SetTextFont(62);
+        tex_pre->SetTextColor(kRed-3);
+        tex_pre->SetTextSize(0.05);
+        tex_pre->Draw();
        
-	TLatex *tex_ND = new TLatex(.6,.80,"LAr1-ND (100m)");
+	TLatex *tex_ND = new TLatex(.6,.85,"LAr1-ND (100m)");
         tex_ND->SetNDC();
         tex_ND->SetTextFont(62);
         tex_ND->SetTextSize(0.05);
 	tex_ND->Draw();
 
-	TLatex *tex_NDPOT = new TLatex(.6,.70,"P.O.T. = 6.6 #times 10^{20}");
+	TLatex *tex_NDPOT = new TLatex(.6,.77,"P.O.T. = 6.6 #times 10^{20}");
 	tex_NDPOT->SetNDC();
 	tex_NDPOT->SetTextFont(62);
 	tex_NDPOT->SetTextSize(0.05);
 	tex_NDPOT->Draw();
 
+        TLatex *tex_stat = new TLatex(.6,.68,"Stat. Uncert. Only");
+        tex_stat->SetNDC();
+        tex_stat->SetTextFont(62);
+        tex_stat->SetTextSize(0.05);
+        tex_stat->Draw();
+
 	char buff_pt_dm_lmls[100];
-	sprintf(buff_pt_dm_lmls,"#Delta m_{41}^{2} = %4.0f eV^{2}", low_DM2);
-	TLatex *tex_dm_lmls = new TLatex(.6,.60,buff_pt_dm_lmls);
+	sprintf(buff_pt_dm_lmls,"#Delta m_{41}^{2} = %4.2f eV^{2}", low_DM2);
+	TLatex *tex_dm_lmls = new TLatex(.6,.6,buff_pt_dm_lmls);
 	tex_dm_lmls->SetNDC();
 	tex_dm_lmls->SetTextFont(62);
 	tex_dm_lmls->SetTextSize(0.05);
 	tex_dm_lmls->Draw();
 
         char buff_pt_sin_lmls[100];
-        sprintf(buff_pt_sin_lmls,"sin^{2}(2#theta_{#mu#mu}) = %.2f", low_Sin2theta);
-        TLatex *tex_sin_lmls = new TLatex(.6,.50,buff_pt_sin_lmls);
+        sprintf(buff_pt_sin_lmls,"sin^{2}(2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}}) = %.2f", low_Sin2theta);
+        TLatex *tex_sin_lmls = new TLatex(.6,.5,buff_pt_sin_lmls);
         tex_sin_lmls->SetNDC();
         tex_sin_lmls->SetTextFont(62);
         tex_sin_lmls->SetTextSize(0.05);
         tex_sin_lmls->Draw();
     
-	TLegend* leg=new TLegend(0.62,0.15,0.82,0.45);
+	TLegend* leg=new TLegend(0.62,0.2,0.82,0.45);
         leg->SetFillStyle(0);
 	leg->SetFillColor(0);
 	leg->SetBorderSize(0);
 	leg->SetTextFont(62);
 	leg->SetTextSize(0.04);
+	leg->SetTextAlign(12);
         leg->AddEntry(ND_null_lmls,"Unoscillated","l");
 	leg->AddEntry(ND_lowm_lows,"Oscillated","p");
         TMarker *gdummy = new TMarker();
@@ -734,11 +748,13 @@ int multiple_detector_fit()
         ND_highm_highs->SetMarkerSize(1.5);
 	ND_highm_highs->Draw("p1 same");
 
+        tex_stat->Draw();
+        tex_pre->Draw();
         tex_ND->Draw();
 	tex_NDPOT->Draw();
 
         char buff_pt_dm_hmhs[100];
-	sprintf(buff_pt_dm_hmhs,"#Delta m_{41}^{2} = %4.0f eV^{2}", high_DM2);
+	sprintf(buff_pt_dm_hmhs,"#Delta m_{41}^{2} = %4.2f eV^{2}", high_DM2);
         TLatex *tex_dm_hmhs = new TLatex(.6,.60,buff_pt_dm_hmhs);
 	tex_dm_hmhs->SetNDC();
         tex_dm_hmhs->SetTextFont(62);
@@ -746,7 +762,7 @@ int multiple_detector_fit()
         tex_dm_hmhs->Draw();
 
         char buff_pt_sin_hmhs[100];
-        sprintf(buff_pt_sin_hmhs,"sin^{2}(2#theta_{#mu#mu}) = %.2f", high_Sin2theta);
+        sprintf(buff_pt_sin_hmhs,"sin^{2}(2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}}) = %.2f", high_Sin2theta);
         TLatex *tex_sin_hmhs = new TLatex(.6,.50,buff_pt_sin_hmhs);
         tex_sin_hmhs->SetNDC();
 	tex_sin_hmhs->SetTextFont(62);
@@ -782,7 +798,7 @@ int multiple_detector_fit()
         Ratio2->Draw("p");
         straight->Draw("l same");
 
-	c5->Print("Evt_Dis_100m_6.pdf");
+	c5->Print("Evt_Dis_100m_44.pdf");
 
 
      
@@ -825,18 +841,21 @@ int multiple_detector_fit()
 	FD_lowm_lows->SetMarkerStyle(22);
 	FD_lowm_lows->SetMarkerSize(1.5);
 	FD_lowm_lows->Draw("p1 same");
+        tex_stat->Draw();
+        tex_pre->Draw();
 
-        TLatex *tex_FD = new TLatex(.57,.80,"T600 (600m), on axis");
+        TLatex *tex_FD = new TLatex(.6,.85,"T600 (600m), on axis");
         tex_FD->SetNDC();
         tex_FD->SetTextFont(62);
-	tex_FD->SetTextSize(0.05);
+	tex_FD->SetTextSize(0.047);
         tex_FD->Draw();
 
-        TLatex *tex_FDPOT = new TLatex(.6,.70,"P.O.T. = 6.6 #times 10^{20}");
+        TLatex *tex_FDPOT = new TLatex(.6,.77,"P.O.T. = 6.6 #times 10^{20}");
 	tex_FDPOT->SetNDC();
         tex_FDPOT->SetTextFont(62);
         tex_FDPOT->SetTextSize(0.05);
         tex_FDPOT->Draw();
+
 
         tex_dm_lmls->Draw();
 	tex_sin_lmls->Draw();
@@ -912,6 +931,8 @@ int multiple_detector_fit()
 	FD_highm_highs->SetLineWidth(1.3);
 	FD_highm_highs->Draw("p1 same");
 
+	tex_stat->Draw();
+        tex_pre->Draw();
         tex_FD->Draw();
         tex_FDPOT->Draw();
 
@@ -948,7 +969,7 @@ int multiple_detector_fit()
         Ratio4->Draw("p");
         straight->Draw("l same");
 
-	c7->Print("Evt_Dis_600m_onaxis_6.pdf");
+	c7->Print("Evt_Dis_600m_onaxis_44.pdf");
 			
 	cout<<"\nEnd of routine.\n";
 	
