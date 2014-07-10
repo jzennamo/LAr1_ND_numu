@@ -96,10 +96,10 @@ int multiple_detector_fit()
 
 	std::string mode = "nu";	//beam mode to run in
 	bool use100m = true;		//Include the detector at 100m?
-	bool use470m = true;		//Include the detector at 470m?
-	bool use700m = false;		//Include the detector at 700m?
+	bool use470m = false;		//Include the detector at 470m?
+	bool use700m = true;		//Include the detector at 700m?
 
-	bool shape_only = true;
+	bool shape_only = false;
 	bool I_break_now = true;
 	bool forceRemake = false;
 
@@ -223,7 +223,7 @@ int multiple_detector_fit()
 	  nbinsE = NULL_100->GetNbinsX();
 	 
 	  for(int i = 1; i <= nbinsE; i++){
-	    NULLVec[counter].push_back(5*(NULL_100->GetBinContent(i)));
+	    NULLVec[counter].push_back((NULL_100->GetBinContent(i)));
 	    NomVec[counter][i-1] = (Nom_100->GetBinContent(i));
 	  }
 
@@ -235,7 +235,7 @@ int multiple_detector_fit()
 	    OSC_100 = (TH1D*)(temp_file.Get(name.c_str()));
 	    OSC_100->Rebin(1);
 	    for(int i = 1; i <= nbinsE; i++){
-	      OscVec[counter][dm].push_back(5*(OSC_100->GetBinContent(i)));
+	      OscVec[counter][dm].push_back((OSC_100->GetBinContent(i)));
 	    }
 	    delete OSC_100;
 	  }
@@ -335,9 +335,9 @@ int multiple_detector_fit()
 
 
 	if (use700m) {
-	  std::string temp_name = "../MatrixFiles/combined_ntuple_600m_offaxis_nu_processed_numu_Joseph_Smeared.root";
+	  std::string temp_name = "../MatrixFiles/combined_ntuple_600m_onaxis_nu_processed_numu_Joseph_Smeared.root";
 	 TFile temp_file(temp_name.c_str());
-	 std::string temp_name_syst = "../MatrixFiles/combined_ntuple_600m_offaxis_nu_processed_numu.root";
+	 std::string temp_name_syst = "../MatrixFiles/combined_ntuple_600m_onaxis_nu_processed_numu.root";
 	  TFile temp_file_syst(temp_name_syst.c_str());
 	  TH1D *NULL_600;
 	  NULL_600 = (TH1D*)(temp_file.Get("NumuCC"));      
@@ -810,7 +810,7 @@ int multiple_detector_fit()
        //TLatex *tex_Detector = new TLatex(.2,.9,"LAr1-ND (100m), T600 (700m)");
        //TLatex *tex_FDetector = new TLatex(.34,.86,"LAr1-FD (700m)");	  
 
-	TLatex *tex_Detector = new TLatex(.2,.23,"#splitline{LAr1-ND (100m)}{and MicroBooNE (470m)}");
+	TLatex *tex_Detector = new TLatex(.2,.23,"#splitline{LAr1-ND (100m)}{and T600 (600m, on axis)}");
 		//TLatex *tex_Detector = new TLatex(.2,.9, "T600 (600m)");
 	tex_Detector->SetNDC();
 	tex_Detector->SetTextFont(62);
@@ -822,11 +822,11 @@ int multiple_detector_fit()
         //tex_FDetector->SetTextSize(0.03);
         //tex_FDetector->Draw();
    
-	TLatex *tex_pre = new TLatex(.18,.96,"PRELIMINARY");
+	TLatex *tex_pre = new TLatex(.18,.78,"PRELIMINARY");
         tex_pre->SetNDC();
         tex_pre->SetTextFont(62);
 	tex_pre->SetTextColor(kRed-3);
-        tex_pre->SetTextSize(0.025);
+        tex_pre->SetTextSize(0.03);
 	tex_pre->Draw();
 
 	TLatex *tex_mode = new TLatex(.18,.92,"#nu mode, CC Events");
@@ -926,8 +926,8 @@ int multiple_detector_fit()
 
 	//       c3 -> Print("ContourComparison/Sens_Matrix_LAr1ND_100m_T600_off_axis_Shape_and_Rate.C");
 
-	//c3 -> Print("Sens_Matrix_LAr1-ND_100m_MicroBooNE_Shape_and_Rate.pdf");
-       	c3 -> Print("Sens_Matrix_LAr1-ND_100m_MicroBooNE_ShapeOnly.pdf");
+	c3 -> Print("Sens_Matrix_LAr1-ND_100m_T600_on_axis_Shape_and_Rate.pdf");
+       	//c3 -> Print("Sens_Matrix_LAr1-ND_100m_MicroBooNE_ShapeOnly.pdf");
 
 
 	cout<<"\nEnd of routine.\n";
