@@ -24,6 +24,16 @@
 #include <sstream>
 #include <fstream>
 
+void add_plot_label( char* label, double x, double y, double size = 0.05, int color = 1, int font = 62, int align = 22 ){
+
+  TLatex *latex = new TLatex( x, y, label );
+  latex->SetNDC();
+  latex->SetTextSize(size);
+  latex->SetTextColor(color);
+  latex->SetTextFont(font);
+  latex->SetTextAlign(align);
+  latex->Draw();
+}
 
 
 int multiple_detector_fit()
@@ -76,12 +86,13 @@ int multiple_detector_fit()
 
   if (use100m){
 
-    std::string temp_name = "../MatrixFiles/combined_ntuple_100m_nu_processed_numu.root";
+    std::string temp_name = /*"../MatrixFiles/combined_ntuple_100m_nu_processed_numu.root";*/"../MatrixFiles/combined_ntuple_100m_nu_processed_CoreyBins_numu.root";
 
     TFile temp_file(temp_name.c_str());
     TH1D *NULL_100;
     NULL_100 = (TH1D*)(temp_file.Get("NumuCC"));
     nbinsE = NULL_100->GetNbinsX();
+    std::cout << nbinsE << std::endl;
       for(int i = 1; i <= nbinsE; i++){
 	  NULLVec[0][i-1] = (NULL_100->GetBinContent(i));
       }
@@ -101,6 +112,7 @@ int multiple_detector_fit()
 	OSC_100 = (TH1D*)(temp_file.Get(name));
           for(int i = 1; i <= nbinsE; i++){
               OscVec[0][u][s][i-1] = (OSC_100->GetBinContent(i));
+	      //	      if(OscVec[0][u][s][i-1] != OscVec[0][u][s][i-1]) std::cout << "erm" <<std::endl;
 
 	  }
 
@@ -113,12 +125,13 @@ int multiple_detector_fit()
   }
 
   if (use470m){
-    std::string temp_name = "../MatrixFiles/combined_ntuple_600m_onaxis_nu_processed_numu.root";
+    std::string temp_name = /*"../MatrixFiles/combined_ntuple_600m_onaxis_nu_processed_numu.root";*/"../MatrixFiles/combined_ntuple_600m_onaxis_nu_processed_CoreyBins_numu.root";
 
     TFile temp_file(temp_name.c_str());
     TH1D *NULL_470;
     NULL_470 = (TH1D*)(temp_file.Get("NumuCC"));
     nbinsE = NULL_470->GetNbinsX();
+    std::cout << nbinsE<< std::endl;
       for(int i = 1; i <= nbinsE; i++){
 	  NULLVec[1][i-1] = (NULL_470->GetBinContent(i));
       }
@@ -137,7 +150,8 @@ int multiple_detector_fit()
        
 	OSC_470 = (TH1D*)(temp_file.Get(name));
           for(int i = 1; i <= nbinsE; i++){
-              OscVec[1][u][s][i-1] = (OSC_470->GetBinContent(i));
+	    OscVec[1][u][s][i-1] = (OSC_470->GetBinContent(i));
+	    if(OscVec[1][u][s][i-1] != OscVec[1][u][s][i-1])  OscVec[1][u][s][i-1] = NULLVec[1][i-1];//std::cout << "erm, u :" << u << " s : " << s << " E : " << i  <<std::endl;
 
 	  }
 
@@ -170,7 +184,7 @@ int multiple_detector_fit()
 
   int N = 0;
 
-  TH1D *Fig5 = new TH1D("Fig5",";;",nbinsE,emin,emax);
+  TH1D *Fig5 = new TH1D("Fig5",";;",mbins,0,mbins);
 
   int Erri = 0, Errj = 0;
 
@@ -215,6 +229,8 @@ int multiple_detector_fit()
           M2 (Erri,Errj) /= N;
           M1 (Erri,Errj) /= N;
 	  M0 (Erri,Errj) /= N;
+
+
 	  
 	  M6 (Erri,Errj) /= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];
           M5 (Erri,Errj) /= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];
@@ -223,10 +239,10 @@ int multiple_detector_fit()
           M2 (Erri,Errj) /= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];
           M1 (Erri,Errj) /= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];
           M0 (Erri,Errj) /= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];
+	  
+	  if(Erri == Errj) Fig5->SetBinContent(Erri+1, sqrt(M6 (Erri,Errj)));
 
-	  if(Lcol == 0 && Lrow == 0 && (Erri == Errj)) Fig5->SetBinContent(Ecol, M6 (Erri,Errj));
-
-	  std::cout << M6 (Erri,Errj) << "\t";
+	  //	  std::cout << M6 (Erri,Errj) << "\t";
 
           Errj++;
 
@@ -235,7 +251,6 @@ int multiple_detector_fit()
       Erri++;
 
     }}
-  std::endl;
 
   for(int i = 0; i < Erri; i++){
     for(int j = 0; j < Errj; j++){
@@ -257,8 +272,8 @@ int multiple_detector_fit()
   TCanvas* c6 = new TCanvas("c6","",700,700);
   c6->SetLeftMargin(.1);
   c6->SetBottomMargin(.1);
-  c6->SetTopMargin(.1);
-  c6->SetRightMargin(.2);
+  c6->SetTopMargin(.075);
+  c6->SetRightMargin(.15);
   c6->cd();
 
   M6.Draw("COLZ");
@@ -268,7 +283,7 @@ int multiple_detector_fit()
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("Fractional Error Matrix");
+  //  TMatrixFBase->GetZaxis()->SetTitle("Fractional Error Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -277,47 +292,67 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kBlue);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
 
 
-  TLatex *ND = new TLatex(.2,.05,"LAr1-ND (100m) ");
+
+  TLatex *ND = new TLatex(.15,.01,"LAr1-ND (100m) ");
   ND->SetNDC();
   ND->SetTextFont(62);
-  ND->SetTextSize(0.05);
+  ND->SetTextSize(0.04);
   ND->Draw();
 
-  TLatex *MD = new TLatex(.57,.05,"T600 (on axis)");
+  TLatex *MD = new TLatex(.55,.01,"T600 (on axis)");
   MD->SetNDC();
   MD->SetTextFont(62);
-  MD->SetTextSize(0.05);
+  MD->SetTextSize(0.04);
   MD->Draw();
 
-  TLatex *ND45 = new TLatex(.075,.2,"LAr1-ND (100m) ");
+  TLatex *ND45 = new TLatex(.05,.15,"LAr1-ND (100m) ");
   ND45->SetNDC();
   ND45->SetTextAngle(90);
   ND45->SetTextFont(62);
-  ND45->SetTextSize(0.05);
+  ND45->SetTextSize(0.04);
   ND45->Draw();
 
-  TLatex *MD45 = new TLatex(.075,.67,"T600 (on axis)");
+  TLatex *MD45 = new TLatex(.05,.59,"T600 (on axis)");
   MD45->SetNDC();
   MD45->SetTextAngle(90);
   MD45->SetTextFont(62);
-  MD45->SetTextSize(0.05);
+  MD45->SetTextSize(0.04);
   MD45->Draw();
 
-  TLatex *Total = new TLatex(.2,.95,"Combined Covariance Matrix");
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} Flux Fractional Error Matrix");
   Total->SetNDC();
   Total->SetTextFont(62);
-  Total->SetTextSize(0.05);
-
+  Total->SetTextSize(0.045);
+  Total->Draw();
 
   c6->Print("total_matrix.pdf");
+
+
+  TCanvas* c8 = new TCanvas("c8","",700,700);
+  c8->SetLeftMargin(.1);
+  c8->SetBottomMargin(.1);
+  c8->SetTopMargin(.1);
+  c8->SetRightMargin(.2);
+  c8->cd();
+  Fig5->SetLineWidth(4);
+  Fig5->Draw("");
+  
+
 
   TCanvas* c61 = new TCanvas("c61","",700,700);
   c61->SetLeftMargin(.1);
   c61->SetBottomMargin(.1);
-  c61->SetTopMargin(.1);
-  c61->SetRightMargin(.2);
+  c61->SetTopMargin(.075);
+  c61->SetRightMargin(.15);
   c61->cd();
 
   C6.Draw("COLZ");
@@ -327,7 +362,7 @@ int multiple_detector_fit()
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("Combined Correlation Matrix");
+  //  TMatrixFBase->GetZaxis()->SetTitle("Combined Correlation Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -336,12 +371,25 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kYellow);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
 
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} Flux Correlation Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
 
   c61->Print("total_correlation_matrix.pdf");
 

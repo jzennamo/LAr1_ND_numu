@@ -60,7 +60,7 @@ int multiple_detector_fit()
   int nbinsE = 0;
   int Entries = 0;
   if (use470m){
-    std::string temp_name = "../MatrixFiles/combined_ntuple_600m_onaxis_nu_processed_numu.root";
+    std::string temp_name = "../MatrixFiles/combined_ntuple_470m_nu_processed_numu.root";
 
     TFile temp_file(temp_name.c_str());
     TH1D *NULL_470;
@@ -104,7 +104,7 @@ int multiple_detector_fit()
 
   if (use100m){
 
-    std::string temp_name = "../MatrixFiles/combined_ntuple_100m_nu_processed_numu.root";
+    std::string temp_name = "../MatrixFiles/combined_ntuple_200m_nu_processed_numu.root";
 
     TFile temp_file(temp_name.c_str());
     TH1D *NULL_100;
@@ -192,7 +192,7 @@ int multiple_detector_fit()
   ratio->GetXaxis()->SetTitle("Smeared Neutrino Energy");
   ratio->GetXaxis()->SetLabelSize(0.03);
   ratio->GetXaxis()->SetTitleOffset(1.5);
-  ratio->GetYaxis()->SetTitle("Ratio T600 (on axis) / LAr1-ND (100m)");
+  ratio->GetYaxis()->SetTitle("Ratio MicroBooNE / LAr1-ND (200m)");
   ratio->GetYaxis()->SetTitleOffset(1.5);
   ratio->GetYaxis()->SetLabelSize(0.03);
   ratio->SetStats(0);
@@ -250,7 +250,7 @@ int multiple_detector_fit()
 
   //ratio->GetYaxis()->SetRangeUser(0,0.15); 
    ratio->Draw("h same");
-   c6->Print("total_ratio_100m.pdf");
+   c6->Print("total_ratio_200m_MicroBooNE.pdf");
   
 
   TCanvas* c10 = new TCanvas("c10","",700,700);
@@ -286,12 +286,12 @@ int multiple_detector_fit()
  legt->SetFillColor(0);
  legt->SetBorderSize(0);
  legt->SetTextSize(0.03);
- legt->AddEntry(RMS,"RMS for T600 (on axis) over LAr1-ND (100m)","l");
+ legt->AddEntry(RMS,"RMS for MicroBooNE over LAr1-ND (200m)","l");
  legt->AddEntry(Err,"Fractional MC Stat Uncert.","l");
  legt->AddEntry(Err_data,"Fractional Data Stat Uncert.","l");
  legt->Draw();
 
-  c10->Print("total_rms_100m.pdf");
+  c10->Print("total_rms_200m_MicroBooNE.pdf");
 
  /*
 
