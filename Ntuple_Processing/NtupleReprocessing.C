@@ -172,27 +172,27 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
   TH1D *MC_mucosT = new TH1D("MC_mucosT","; MC Truth Muon cos(#theta);Events",250,0,6.2);
 
 
-  TH1D *numuCC = new TH1D("NumuCC","NumuCC;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuCC_truth = new TH1D("NumuCC_True","NumuCC;True Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuCC_cont = new TH1D("NumuCC_cont","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuCC_cont_truth = new TH1D("NumuCC_cont_True","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuCC_exit = new TH1D("NumuCC_exit","NumuCC_exit;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuCC_exit_truth = new TH1D("NumuCC_exit_True","NumuCC_exit;True Neutrino Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuCC = new TH1D("NumuCC","NumuCC;Reconstructed Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuCC_truth = new TH1D("NumuCC_True","NumuCC;True Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuCC_cont = new TH1D("NumuCC_cont","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuCC_cont_truth = new TH1D("NumuCC_cont_True","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuCC_exit = new TH1D("NumuCC_exit","NumuCC_exit;Reconstructed Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuCC_exit_truth = new TH1D("NumuCC_exit_True","NumuCC_exit;True Neutrino Energy [GeV];Events",19, bins);
 
-  TH1D *numuNC = new TH1D("NumuNC","NumuCC;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuNC_truth = new TH1D("NumuNC_True","NumuCC;True Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuNC_cont = new TH1D("NumuNC_cont","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuNC_cont_truth = new TH1D("NumuNC_cont_True","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuNC_exit = new TH1D("NumuNC_exit","NumuCC_exit;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuNC_exit_truth = new TH1D("NumuNC_exit_True","NumuCC_exit;True Neutrino Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuNC = new TH1D("NumuNC","NumuCC;Reconstructed Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuNC_truth = new TH1D("NumuNC_True","NumuCC;True Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuNC_cont = new TH1D("NumuNC_cont","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuNC_cont_truth = new TH1D("NumuNC_cont_True","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuNC_exit = new TH1D("NumuNC_exit","NumuCC_exit;Reconstructed Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuNC_exit_truth = new TH1D("NumuNC_exit_True","NumuCC_exit;True Neutrino Energy [GeV];Events",19, bins);
 
-  TH1D *numuCCLepE = new TH1D("NumuCCLepE", "NumuCCLepE;Total Muon Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuCCLepE_cont = new TH1D("NumuCCLepE_cont", "NumuCCLepE_cont;Contained Muon Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuCCLepE_exit = new TH1D("NumuCCLepE_exit", "NumuCCLepE_exit;Exiting Muon Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuCCLepE = new TH1D("NumuCCLepE", "NumuCCLepE;Total Muon Energy [GeV];Events",19, bins);
+  TH1D *numuCCLepE_cont = new TH1D("NumuCCLepE_cont", "NumuCCLepE_cont;Contained Muon Energy [GeV];Events",19, bins);
+  TH1D *numuCCLepE_exit = new TH1D("NumuCCLepE_exit", "NumuCCLepE_exit;Exiting Muon Energy [GeV];Events",19, bins);
 
-  TH1D *numuNCLepE = new TH1D("NumuNCLepE", "NumuCCLepE;Total Muon Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuNCLepE_cont = new TH1D("NumuNCLepE_cont", "NumuCCLepE_cont;Contained Muon Energy [GeV];Events",10, 0.2, 3.0);
-  TH1D *numuNCLepE_exit = new TH1D("NumuNCLepE_exit", "NumuCCLepE_exit;Exiting Muon Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuNCLepE = new TH1D("NumuNCLepE", "NumuCCLepE;Total Muon Energy [GeV];Events",19, bins);
+  TH1D *numuNCLepE_cont = new TH1D("NumuNCLepE_cont", "NumuCCLepE_cont;Contained Muon Energy [GeV];Events",19, bins);
+  TH1D *numuNCLepE_exit = new TH1D("NumuNCLepE_exit", "NumuCCLepE_exit;Exiting Muon Energy [GeV];Events",19, bins);
 
   TH1D *numuCCLepTheta = new TH1D("NumuCCLepTheta", "NumuCCLepE; Muon Angle (#theta);Events",20*ebins,0,180);
   TH1D *numuCCLepTheta_cont = new TH1D("NumuCCLepTheta_cont", "NumuCCLepE_cont;Contained Muon Angle (#theta);Events",20*ebins,0,180);
