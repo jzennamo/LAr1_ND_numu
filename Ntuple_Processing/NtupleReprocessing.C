@@ -98,7 +98,6 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
   int iChan = 0, iTop = 0;
 
   TVector3 MuonExitPos(0,0,0), MuonExitMom(0,0,0), MuonInitialMom(0,0,0);
-  TVector3 ChargedPionExitPos(0,0,0), ChargedPionExitMom(0,0,0), ChargedPionInitialMom(0,0,0);
 
   // initialize counters and histograms
 
@@ -172,59 +171,33 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
   TH1D *MC_mucosT = new TH1D("MC_mucosT","; MC Truth Muon cos(#theta);Events",250,0,6.2);
 
 
-  TH1D *numuCC = new TH1D("NumuCC","NumuCC;Reconstructed Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuCC_truth = new TH1D("NumuCC_True","NumuCC;True Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuCC_cont = new TH1D("NumuCC_cont","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuCC_cont_truth = new TH1D("NumuCC_cont_True","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuCC_exit = new TH1D("NumuCC_exit","NumuCC_exit;Reconstructed Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuCC_exit_truth = new TH1D("NumuCC_exit_True","NumuCC_exit;True Neutrino Energy [GeV];Events",19, bins);
+  TH1D *numuCC = new TH1D("NumuCC","NumuCC;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuCC_truth = new TH1D("NumuCC_True","NumuCC;True Neutrino Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuCC_cont = new TH1D("NumuCC_cont","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuCC_cont_truth = new TH1D("NumuCC_cont_True","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuCC_exit = new TH1D("NumuCC_exit","NumuCC_exit;Reconstructed Neutrino Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuCC_exit_truth = new TH1D("NumuCC_exit_True","NumuCC_exit;True Neutrino Energy [GeV];Events",10, 0.2, 3.0);
 
-  TH1D *numuNC = new TH1D("NumuNC","NumuCC;Reconstructed Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuNC_truth = new TH1D("NumuNC_True","NumuCC;True Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuNC_cont = new TH1D("NumuNC_cont","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuNC_cont_truth = new TH1D("NumuNC_cont_True","NumuCC_cont;Reconstructed Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuNC_exit = new TH1D("NumuNC_exit","NumuCC_exit;Reconstructed Neutrino Energy [GeV];Events",19, bins);
-  TH1D *numuNC_exit_truth = new TH1D("NumuNC_exit_True","NumuCC_exit;True Neutrino Energy [GeV];Events",19, bins);
 
-  TH1D *numuCCLepE = new TH1D("NumuCCLepE", "NumuCCLepE;Total Muon Energy [GeV];Events",19, bins);
-  TH1D *numuCCLepE_cont = new TH1D("NumuCCLepE_cont", "NumuCCLepE_cont;Contained Muon Energy [GeV];Events",19, bins);
-  TH1D *numuCCLepE_exit = new TH1D("NumuCCLepE_exit", "NumuCCLepE_exit;Exiting Muon Energy [GeV];Events",19, bins);
-
-  TH1D *numuNCLepE = new TH1D("NumuNCLepE", "NumuCCLepE;Total Muon Energy [GeV];Events",19, bins);
-  TH1D *numuNCLepE_cont = new TH1D("NumuNCLepE_cont", "NumuCCLepE_cont;Contained Muon Energy [GeV];Events",19, bins);
-  TH1D *numuNCLepE_exit = new TH1D("NumuNCLepE_exit", "NumuCCLepE_exit;Exiting Muon Energy [GeV];Events",19, bins);
+  TH1D *numuCCLepE = new TH1D("NumuCCLepE", "NumuCCLepE;Total Muon Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuCCLepE_cont = new TH1D("NumuCCLepE_cont", "NumuCCLepE_cont;Contained Muon Energy [GeV];Events",10, 0.2, 3.0);
+  TH1D *numuCCLepE_exit = new TH1D("NumuCCLepE_exit", "NumuCCLepE_exit;Exiting Muon Energy [GeV];Events",10, 0.2, 3.0);
 
   TH1D *numuCCLepTheta = new TH1D("NumuCCLepTheta", "NumuCCLepE; Muon Angle (#theta);Events",20*ebins,0,180);
   TH1D *numuCCLepTheta_cont = new TH1D("NumuCCLepTheta_cont", "NumuCCLepE_cont;Contained Muon Angle (#theta);Events",20*ebins,0,180);
   TH1D *numuCCLepTheta_exit = new TH1D("NumuCCLepTheta_exit", "NumuCCLepE_exit;Exiting Muon Angle (#theta);Events",20*ebins,0,180);
 
-  TH1D *numuNCLepTheta = new TH1D("NumuNCLepTheta", "NumuCCLepE; Muon Angle (#theta);Events",20*ebins,0,180);
-  TH1D *numuNCLepTheta_cont = new TH1D("NumuNCLepTheta_cont", "NumuCCLepE_cont;Contained Muon Angle (#theta);Events",20*ebins,0,180);
-  TH1D *numuNCLepTheta_exit = new TH1D("NumuNCLepTheta_exit", "NumuCCLepE_exit;Exiting Muon Angle (#theta);Events",20*ebins,0,180);
-
   TH1D *numuCCLepLength = new TH1D("NumuCCLepLength", "NumuCCLepE; Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
   TH1D *numuCCLepLength_cont = new TH1D("NumuCCLepLength_cont", "NumuCCLepE_cont;Contained Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
   TH1D *numuCCLepLength_exit = new TH1D("NumuCCLepLength_exit", "NumuCCLepE_exit;Exiting Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
-
-  TH1D *numuNCLepLength = new TH1D("NumuNCLepLength", "NumuCCLepE; Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
-  TH1D *numuNCLepLength_cont = new TH1D("NumuNCLepLength_cont", "NumuCCLepE_cont;Contained Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
-  TH1D *numuNCLepLength_exit = new TH1D("NumuNCLepLength_exit", "NumuCCLepE_exit;Exiting Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
 
   TH1D *numuCCLepZLength = new TH1D("NumuCCLepZLength", "NumuCCLepE; Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
   TH1D *numuCCLepZLength_cont = new TH1D("NumuCCLepZLength_cont", "NumuCCLepE_cont;Contained Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
   TH1D *numuCCLepZLength_exit = new TH1D("NumuCCLepZLength_exit", "NumuCCLepE_exit;Exiting Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
 
-  TH1D *numuNCLepZLength = new TH1D("NumuNCLepZLength", "NumuCCLepE; Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
-  TH1D *numuNCLepZLength_cont = new TH1D("NumuNCLepZLength_cont", "NumuCCLepE_cont;Contained Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
-  TH1D *numuNCLepZLength_exit = new TH1D("NumuNCLepZLength_exit", "NumuCCLepE_exit;Exiting Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
-
   TH1D *numuCCLepRLength = new TH1D("NumuCCLepRLength", "NumuCCLepE; Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
   TH1D *numuCCLepRLength_cont = new TH1D("NumuCCLepRLength_cont", "NumuCCLepE_cont;Contained Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
   TH1D *numuCCLepRLength_exit = new TH1D("NumuCCLepRLength_exit", "NumuCCLepE_exit;Exiting Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
-
-  TH1D *numuNCLepRLength = new TH1D("NumuNCLepRLength", "NumuCCLepE; Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
-  TH1D *numuNCLepRLength_cont = new TH1D("NumuNCLepRLength_cont", "NumuCCLepE_cont;Contained Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
-  TH1D *numuNCLepRLength_exit = new TH1D("NumuNCLepRLength_exit", "NumuCCLepE_exit;Exiting Muon Angle (#theta);Events",20*ebins,0,nd_zmax);
 
   TH1D *nuE_all = new TH1D("NuEnergy_all",";True Neutrino Energy [GeV];Events",20,emin,emax);
   TH1D *nuE_accepted = new TH1D("NuEnergy_accepted",";True Neutrino Energy [GeV] Events",20,emin,emax);
@@ -325,22 +298,12 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
   TH1D *numuCC_Osc_cont[npoints+1];
   TH1D *numuCC_Osc_exit[npoints+1];
 
-  TH1D *numuNC_Osc[npoints+1];
-  TH1D *numuNC_Osc_cont[npoints+1];
-  TH1D *numuNC_Osc_exit[npoints+1];
-  TH1D *numuNC_Osc_truth[npoints+1];
-
   for(int i = 0; i <= npoints; i++){
     numuCC_Osc[i] = (TH1D*)numuCC->Clone();    
     numuCC_Osc_truth[i] = (TH1D*)numuCC_truth->Clone();
     numuCC_Osc_cont[i] = (TH1D*)numuCC_cont->Clone();
     numuCC_Osc_exit[i] = (TH1D*)numuCC_exit->Clone();
  
-    numuNC_Osc[i] = (TH1D*)numuNC->Clone();
-    numuNC_Osc_exit[i] = (TH1D*)numuNC_exit->Clone();
-    numuNC_Osc_cont[i] = (TH1D*)numuNC_cont->Clone();
-    numuNC_Osc_truth[i] = (TH1D*)numuNC_truth->Clone();
-
   }
 
   double cont_pion = 0, exit_pion = 0, NCevents = 0, CCevents = 0, NCselected = 0;
@@ -389,14 +352,7 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
     
     fluxweight = utils.GetFluxWeight( energy, iflux, inno, ndecay );
 
-    if(iDet == 3) {
-
-      fluxweight *= pow(700,2)/pow(600,2);
-
-      std::cout << "############################################################## Rescaling from 700m to 600m, USE ONLY IF RUNNING OVER 700m FILE!!!!! ###################" << std::endl;
-
-    }
-
+    //    if(iDet == 3) {fluxweight *= pow(700,2)/pow(600,2);}
 
     // Lump in the Pot weight to flux weight so it isn't lost:
     fluxweight *= potweight;
@@ -411,202 +367,6 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
     if( !isActive ) continue;
     evt_wgt = true_nuleng = reco_energy = true_enugen = 0;
     
-   
-    //----------------------------------------------
-    // Cycle through all pions in the event
-    //----------------------------------------------
-    /*    if (!isCC && ChargedPionMom->size() == 0) {
-      continue;
-    }
-    
-    if(signal == "numu" && isFid && !isCC && ChargedPionPos->size() > 0){
-      
-      nu_LE_wgt = 0; efficiency = muonIDeff; wgt = fluxweight*efficiency; nu_LE_wgt = (nuleng/100.)/(enugen*1000.);
-   
-      //      if(iDet == 0) wgt /= 3.0;
-
-      NCevents += wgt;
-      
-
-
-      int pi_iter = -500, pi_exit = 0;
-      ChargedPionExitPos *= 0.0;
-      ChargedPionExitMom *= 0.0;
-      ChargedPionInitialMom *= 0.0;
-
-      int exit_pi_num = 0;
-
-      bool Pion_contained = false;
-
-      for(unsigned int pi = 0; pi < ChargedPionPos->size(); pi++){
-
-        vector<gan::LorentzVectorLight> cPiPos = ChargedPionMom->at(pi);
-	vector<gan::LorentzVectorLight> cPiMom = ChargedPionPos->at(pi);
-
-
-
-        //Match the pion to the vertex
-
-        unsigned int piPosIndex = 0;
-
-        bool contained_pi = true;
-
-        Pion_D->Fill(sqrt(pow((vtx.X()-cPiMom[0].X()),2)+
-                          pow((vtx.Y()-cPiMom[0].Y()),2)+
-                          pow((vtx.Z()-cPiMom[0].Z()),2)),wgt);
-
-        if(sqrt(pow((vtx.X()-cPiMom[0].X()),2)+
-		pow((vtx.Y()-cPiMom[0].Y()),2)+
-                pow((vtx.Z()-cPiMom[0].Z()),2)) > 10) continue;
-
-        while(contained_pi && piPosIndex < cPiMom.size()){
-
-          TVector3 pipos(cPiMom[piPosIndex].X(),
-                         cPiMom[piPosIndex].Y(),
-                         cPiMom[piPosIndex].Z());
-          contained_pi = utils.IsActive(iDet, ND_iDet,pipos,5);
-          piPosIndex++;
-
-        }
-
-        if(!contained_pi) {
-          exit_pi_num += 1; pi_iter = pi; pi_exit = piPosIndex;
-	}//exiting pions
-
-	if(contained_pi && exit_pi_num == 0){
-
-          pi_iter = pi; pi_exit = piPosIndex;
-
-	}//contained pions
-      }//scan over pions and see if they are contained
-
-      N_Exit_Pion->Fill(exit_pi_num,wgt);
-
-      bool contained = false;
-      if(pi_iter == -500) continue;
-      if(exit_pi_num > 1){
-        NC_wEpi += wgt;}
-      //continue;}
-      if(exit_pi_num == 1 ){
-	exit_pion += wgt;
-      }
-
-      if(exit_pi_num == 0) { wgt *= piEff_pi; contained = true;}
-
-
-
-
-      NCselected += wgt;
-
-      ChargedPionExitPos = TVector3(ChargedPionPos->at(pi_iter)[pi_exit-1].X(),
-                                    ChargedPionPos->at(pi_iter)[pi_exit-1].Y(),
-                                    ChargedPionPos->at(pi_iter)[pi_exit-1].Z());
-      ChargedPionExitMom = TVector3(ChargedPionMom->at(pi_iter)[pi_exit-1].X(),
-                                    ChargedPionMom->at(pi_iter)[pi_exit-1].Y(),
-                                    ChargedPionMom->at(pi_iter)[pi_exit-1].Z());
-      ChargedPionInitialMom = TVector3(ChargedPionMom->at(pi_iter)[0].X(),
-                                       ChargedPionMom->at(pi_iter)[0].Y(),
-                                       ChargedPionMom->at(pi_iter)[0].Z());
-
-
-      Double_t photon_energy = utils.TotalPhotonEnergy( iDet, ND_iDet, p1PhotonConversionPos, p1PhotonConversionMom,
-                                                        p2PhotonConversionPos, p2PhotonConversionMom );
-
-
-      //---------------------------------------------
-      //After this point we don't know they are pions
-      //---------------------------------------------
-
-      //Unsmeared Lepton Energy
-      mu_E = ChargedPionMom->at(pi_iter)[0].E();
-
-
-      //internal muon length
-      mu_L = 0;
-      mu_L = sqrt(pow((vtx.X()-ChargedPionExitPos.X()),2)+
-                  pow((vtx.Y()-ChargedPionExitPos.Y()),2)+
-                  pow((vtx.Z()-ChargedPionExitPos.Z()),2));
-
-      Pion_L->Fill(mu_L,wgt);
-
-      //      std::cout << "Pion track length : " << mu_L << std::endl;
-
-      //Initial Lepton production angle
-      mu_Theta = utils.GetTheta(ChargedPionInitialMom.X(), ChargedPionInitialMom.Y(), ChargedPionInitialMom.Z());
-
-      int HowMeasuresed = 0;
-
-      //Smear the lepton energy and return the smearing for Syst studies
-      ranger = utils.RangeOut(ChargedPionExitPos, ChargedPionExitMom, mu_L, ND_iDet);
-
-      smeared_mu_E = utils.EnergyRes(contained, mu_E, mu_L, ND_iDet, ranger, MuonExitMom,
-                                     MuonInitialMom, MuonExitPos, vtx, 0, HowMeasuresed);
-
-      if(smeared_mu_E < 0) smeared_mu_E = 0;
-
-      //Compute neutrino reco. energy
-      if(smeared_mu_E > 0){
-	EnuReco = utils.NuEnergyCalo_smeared( GeniePDG,
-                                              GenieE,
-                                              0.02, //proton threshold
-                                              smeared_mu_E,
-                                              mu_E,
-                                              "NC",
-                                              0.05)+photon_energy; //hadronic resolution
-      }
-      else{EnuReco = 0;}
-
-      if(smeared_mu_E > 0){
-	numuNC_truth->Fill(enugen, wgt);
-        numuNC->Fill(EnuReco, wgt);
-        numuNCLepE->Fill(smeared_mu_E, wgt);
-	numuNCLepLength->Fill(mu_L, wgt);
-	numuNCLepZLength->Fill(mu_L*(TMath::Cos(mu_Theta)), wgt);
-	numuNCLepRLength->Fill(mu_L*(TMath::Sin(mu_Theta)), wgt);
-	numuNCLepTheta->Fill(mu_Theta*(180/3.14), wgt);
-	
-        if(!contained){
-	  numuNC_exit->Fill(EnuReco,wgt);
-	  numuNCLepE_exit->Fill(smeared_mu_E, wgt);
-	  numuNCLepLength_exit->Fill(mu_L, wgt);
-	  numuNCLepZLength_exit->Fill(mu_L*(TMath::Cos(mu_Theta)), wgt);
-	  numuNCLepRLength_exit->Fill(mu_L*(TMath::Sin(mu_Theta)), wgt);
-	  numuNCLepTheta_exit->Fill(mu_Theta*(180/3.14), wgt);}
-
-	else{
-	  numuNC_cont->Fill(EnuReco,wgt);
-	  numuNCLepE_cont->Fill(smeared_mu_E, wgt);
-	  numuNCLepLength_cont->Fill(mu_L, wgt);
-	  numuNCLepZLength_cont->Fill(mu_L*(TMath::Cos(mu_Theta)), wgt);
-	  numuNCLepRLength_cont->Fill(mu_L*(TMath::Sin(mu_Theta)), wgt);
-	  numuNCLepTheta_cont->Fill(mu_Theta*(180/3.14), wgt);
-	}
-
-
-        //Partial oscillation computation
-	for(int dm2 = 0; dm2 <= npoints; dm2++){
-
-          DMpoint = pow(10., (TMath::Log10(dm2min)+ (dm2 * (1./npoints))*TMath::Log10(dm2max/dm2min)) );
-          numuNC_Osc[dm2]->Fill(EnuReco,wgt*pow(TMath::Sin((1.267)*(DMpoint)*nu_LE_wgt),2));
-
-          if(!contained){numuNC_Osc_exit[dm2]->Fill(EnuReco,wgt*pow(TMath::Sin((1.267)*(DMpoint)*nu_LE_wgt),2));}
-          else{numuNC_Osc_cont[dm2]->Fill(EnuReco,wgt*pow(TMath::Sin((1.267)*(DMpoint)*nu_LE_wgt),2));}
-
-
-        }
-      }// smeared E > 0!
-
-
-    }//select NC event with some number of pions
-
-    */
-   
-    //----------------------------------------------
-    //
-    // NOW MUONS!
-    //
-    //----------------------------------------------
-
     //----------------------------------------------
     // Track the muon till it exits the detector:
     //----------------------------------------------
@@ -974,10 +734,6 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
   muTheta_accepted->Write();
   muTE_accepted->Write();
 
-  numuNC_truth->Write();
-  numuCC_truth->Write();
-  numuCC_exit_truth->Write();
-
   muE_Reco_True->Write();
   nuE_Reco_True->Write();
 
@@ -1033,11 +789,6 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
   muTheta_all_exit->Write();
   muTheta_accepted_exit->Write();
 
-  numuNC->Write();
-  numuNC_cont->Write();
-  numuNC_exit->Write();
-
-
   numuCCLepTheta->Write();
   numuCCLepTheta_cont->Write();
   numuCCLepTheta_exit->Write();
@@ -1058,52 +809,23 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
   numuCCLepRLength_cont->Write();
   numuCCLepRLength_exit->Write();
 
-  numuNCLepTheta->Write();
-  numuNCLepTheta_cont->Write();
-  numuNCLepTheta_exit->Write();
-
-  numuNCLepLength->Write();
-  numuNCLepLength_cont->Write();
-  numuNCLepLength_exit->Write();
-
-  numuNCLepLength->Write();
-  numuNCLepLength_cont->Write();
-  numuNCLepLength_exit->Write();
-
-  numuNCLepZLength->Write();
-  numuNCLepZLength_cont->Write();
-  numuNCLepZLength_exit->Write();
-
-  numuNCLepRLength->Write();
-  numuNCLepRLength_cont->Write();
-  numuNCLepRLength_exit->Write();
-
   for(int dm2 = 0; dm2 <= npoints; dm2++){
     std::string dmpoint = std::to_string(dm2);
     std::string name = "Osc_";
     std::string true_name = "Osc_True";
     std::string exit_name = "Osc_exit";
     std::string cont_name = "Osc_cont";
-    std::string nc_name = "Osc_NC";
-    std::string nc_exit_name = "Osc_NC_exit";
-    std::string nc_cont_name = "Osc_NC_cont";
 
     name = name+dmpoint;
     true_name = true_name+dmpoint;
     exit_name = exit_name+dmpoint;
     cont_name = cont_name+dmpoint;
-    nc_name = nc_name+dmpoint;
-    nc_exit_name = nc_exit_name+dmpoint;
-    nc_cont_name = nc_cont_name+dmpoint;
 
     numuCC_Osc[dm2]->Write(name.c_str());
     numuCC_Osc_truth[dm2]->Write(true_name.c_str());
     numuCC_Osc_exit[dm2]->Write(exit_name.c_str());
     numuCC_Osc_cont[dm2]->Write(cont_name.c_str());
 
-    numuNC_Osc[dm2]->Write(nc_name.c_str());
-    numuNC_Osc_exit[dm2]->Write(nc_exit_name.c_str());
-    numuNC_Osc_cont[dm2]->Write(nc_cont_name.c_str());
   }
 
   f->Write();

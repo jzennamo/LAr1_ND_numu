@@ -86,9 +86,9 @@ class NtupleReprocessing {
   vector<gan::LorentzVectorLight> *miscPhotonConversionMom;
   vector<gan::LorentzVectorLight> *PionPos;
   vector<gan::LorentzVectorLight> *PionMom;
-  vector< vector<gan::LorentzVectorLight> > *ChargedPionPos;
-  vector< vector<gan::LorentzVectorLight> > *ChargedPionMom;
-  vector<gan::LorentzVectorLight> *ChargedPionSign;  
+  //  vector< vector<gan::LorentzVectorLight> > *ChargedPionPos;
+  // vector< vector<gan::LorentzVectorLight> > *ChargedPionMom;
+  // vector<gan::LorentzVectorLight> *ChargedPionSign;  
   // List of branches
   TBranch        *b_iflux;   //!
   TBranch        *b_ibkg;   //!
@@ -136,9 +136,9 @@ class NtupleReprocessing {
   TBranch        *b_miscPhotonConversionMom;   //!
   TBranch        *b_PionPos;   //!
   TBranch        *b_PionMom;   //!
-  TBranch        *b_ChargedPionPos;
-  TBranch        *b_ChargedPionMom;
-  TBranch        *b_ChargedPionSign;  
+  // TBranch        *b_ChargedPionPos;
+  //  TBranch        *b_ChargedPionMom;
+  // TBranch        *b_ChargedPionSign;  
 
   NtupleReprocessing(TString file = "");
   virtual ~NtupleReprocessing();
@@ -295,9 +295,9 @@ void NtupleReprocessing::Init(TTree *tree)
    fChain->SetBranchAddress("miscPhotonConversionMom", &miscPhotonConversionMom, &b_miscPhotonConversionMom);
    fChain->SetBranchAddress("PionPos", &PionPos, &b_PionPos);
    fChain->SetBranchAddress("PionMom", &PionMom, &b_PionMom);
-   fChain->SetBranchAddress("ChargedPionPos",&ChargedPionPos,&b_ChargedPionPos);
-   fChain->SetBranchAddress("ChargedPionMom",&ChargedPionMom,&b_ChargedPionMom);
-   fChain->SetBranchAddress("ChargedPionSign",&ChargedPionSign,&b_ChargedPionSign);
+   // fChain->SetBranchAddress("ChargedPionPos",&ChargedPionPos,&b_ChargedPionPos);
+   // fChain->SetBranchAddress("ChargedPionMom",&ChargedPionMom,&b_ChargedPionMom);
+   // fChain->SetBranchAddress("ChargedPionSign",&ChargedPionSign,&b_ChargedPionSign);
    
    Notify();
 }
