@@ -393,7 +393,7 @@ void NtupleReprocessing::Loop( string signal, Int_t iDet, int ND_iDet, Long64_t 
 
       fluxweight *= pow(700,2)/pow(600,2);
 
-      std::cout << "############################################################## Rescaling from 700m to 600m, USE ONLY IF RUNNING OVER 700m FILE!!!!! ###################" 
+      std::cout << "############################################################## Rescaling from 700m to 600m, USE ONLY IF RUNNING OVER 700m FILE!!!!! ###################" << std::endl;
 
     }
 
