@@ -1,0 +1,20 @@
+
+To run NtupleReprocessing.C you need to do the following:
+
+open root:
+
+> root
+
+Then compile NtupleReprocessing.C:
+
+> .L NtupleReprocessing.C+
+
+Then load the wanted file:
+
+> NtupleReprocessing s("_file_");  (where "_file_" is whatever file you want)
+
+Then loop over that file:
+
+>s.Loop("numu", _Detector_, 1);
+
+Then your output file will be in the same directory as "_file_" but labled "Joseph_Smeared"
