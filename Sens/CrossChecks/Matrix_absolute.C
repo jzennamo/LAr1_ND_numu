@@ -113,6 +113,25 @@ int multiple_detector_fit()
   int nbinsE = 0;
   int counter = 0;
 
+  double bins[20] = {.200, .300, .400, .450, .500, .550, .600, .650, .700, .750, .800, .850, .900, .950, 1.000, 1.250, 1.500, 2.000, 2.500, 3.000};
+
+  TH1D *ND_err = new TH1D("ND","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *ND_err_beam = new TH1D("ND_beam","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *ND_err_pimin = new TH1D("ND_pimin","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *ND_err_piplus = new TH1D("ND_piplus","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *ND_err_K0 = new TH1D("ND_K0","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *ND_err_Kmin = new TH1D("ND_Kmin","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *ND_err_Kplus = new TH1D("ND_Kplus","; Neutrino Energy [GeV];Events",19, bins);;
+
+  TH1D *FD_err = new TH1D("FD","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *FD_err_beam = new TH1D("FD_beam","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *FD_err_pimin = new TH1D("FD_pimin","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *FD_err_piplus = new TH1D("FD_piplus","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *FD_err_K0 = new TH1D("FD_K0","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *FD_err_Kmin = new TH1D("FD_Kmin","; Neutrino Energy [GeV];Events",19, bins);;
+  TH1D *FD_err_Kplus = new TH1D("FD_Kplus","; Neutrino Energy [GeV];Events",19, bins);;
+
+
   if (use100m){
 
     std::string temp_name = "../MatrixFiles/combined_ntuple_100m_nu_processed_SystSplit_numu.root";
@@ -120,23 +139,23 @@ int multiple_detector_fit()
     TFile temp_file(temp_name.c_str());
     TH1D *NULL_100;TH1D *NULL_100_beam;TH1D *NULL_100_pimin;TH1D *NULL_100_piplus;TH1D *NULL_100_K0;TH1D *NULL_100_Kmin;TH1D *NULL_100_Kplus;
     NULL_100 =        (TH1D*)(temp_file.Get("NumuCC"));
-    NULL_100_beam =   (TH1D*)(temp_file.Get("NumuCC_beam"));
-    NULL_100_pimin =  (TH1D*)(temp_file.Get("NumuCC_pimin"));
-    NULL_100_piplus = (TH1D*)(temp_file.Get("NumuCC_piplus"));
-    NULL_100_K0 =     (TH1D*)(temp_file.Get("NumuCC_K0"));
-    NULL_100_Kmin =   (TH1D*)(temp_file.Get("NumuCC_Kmin"));
-    NULL_100_Kplus =  (TH1D*)(temp_file.Get("NumuCC_Kplus"));
+    //    NULL_100_beam =   (TH1D*)(temp_file.Get("NumuCC_beam"));
+    // NULL_100_pimin =  (TH1D*)(temp_file.Get("NumuCC_pimin"));
+    // NULL_100_piplus = (TH1D*)(temp_file.Get("NumuCC_piplus"));
+    // NULL_100_K0 =     (TH1D*)(temp_file.Get("NumuCC_K0"));
+    // NULL_100_Kmin =   (TH1D*)(temp_file.Get("NumuCC_Kmin"));
+    //NULL_100_Kplus =  (TH1D*)(temp_file.Get("NumuCC_Kplus"));
 
     nbinsE = NULL_100->GetNbinsX();
     std::cout << nbinsE << std::endl;
       for(int i = 1; i <= nbinsE; i++){
 	  NULLVec[counter][i-1] =        (NULL_100->GetBinContent(i));
-          NULLVec_beam[counter][i-1] =   (NULL_100_beam->GetBinContent(i));
-          NULLVec_pimin[counter][i-1] =  (NULL_100_pimin->GetBinContent(i));
-          NULLVec_piplus[counter][i-1] = (NULL_100_piplus->GetBinContent(i));
-          NULLVec_K0[counter][i-1] =     (NULL_100_K0->GetBinContent(i));
-          NULLVec_Kmin[counter][i-1] =   (NULL_100_Kmin->GetBinContent(i));
-          NULLVec_Kplus[counter][i-1] =  (NULL_100_Kplus->GetBinContent(i));
+	  //     NULLVec_beam[counter][i-1] =   (NULL_100_beam->GetBinContent(i));
+	  // NULLVec_pimin[counter][i-1] =  (NULL_100_pimin->GetBinContent(i));
+	  // NULLVec_piplus[counter][i-1] = (NULL_100_piplus->GetBinContent(i));
+	  // NULLVec_K0[counter][i-1] =     (NULL_100_K0->GetBinContent(i));
+	  // NULLVec_Kmin[counter][i-1] =   (NULL_100_Kmin->GetBinContent(i));
+          //NULLVec_Kplus[counter][i-1] =  (NULL_100_Kplus->GetBinContent(i));
 
 
       }
@@ -160,43 +179,43 @@ int multiple_detector_fit()
 	TString syst_Kplus; TString Kplus = "_Kplus"; syst_Kplus = name+upoint+name2+mul+Kplus;
        
 	OSC_100 = (TH1D*)(temp_file.Get(nom));
-        OSC_100_beam = (TH1D*)(temp_file.Get(syst_beam));
-        OSC_100_pimin = (TH1D*)(temp_file.Get(syst_pimin));
-        OSC_100_piplus = (TH1D*)(temp_file.Get(syst_piplus));
-        OSC_100_K0 = (TH1D*)(temp_file.Get(syst_K0));
-        OSC_100_Kmin = (TH1D*)(temp_file.Get(syst_Kmin));
-        OSC_100_Kplus = (TH1D*)(temp_file.Get(syst_Kplus));
+	//        OSC_100_beam = (TH1D*)(temp_file.Get(syst_beam));
+	// OSC_100_pimin = (TH1D*)(temp_file.Get(syst_pimin));
+	// OSC_100_piplus = (TH1D*)(temp_file.Get(syst_piplus));
+	// OSC_100_K0 = (TH1D*)(temp_file.Get(syst_K0));
+        //OSC_100_Kmin = (TH1D*)(temp_file.Get(syst_Kmin));
+        //OSC_100_Kplus = (TH1D*)(temp_file.Get(syst_Kplus));
 
 
           for(int i = 1; i <= nbinsE; i++){
               OscVec[counter][u][s][i-1] =        (OSC_100->GetBinContent(i));
-	      OscVec_beam[counter][u][s][i-1] =   (OSC_100_beam->GetBinContent(i));
-              OscVec_pimin[counter][u][s][i-1] =  (OSC_100_pimin->GetBinContent(i));
-              OscVec_piplus[counter][u][s][i-1] = (OSC_100_piplus->GetBinContent(i));
-              OscVec_K0[counter][u][s][i-1] =     (OSC_100_K0->GetBinContent(i));
-              OscVec_Kmin[counter][u][s][i-1] =   (OSC_100_Kmin->GetBinContent(i));
-              OscVec_Kplus[counter][u][s][i-1] =  (OSC_100_Kplus->GetBinContent(i));
+	      //    OscVec_beam[counter][u][s][i-1] =   (OSC_100_beam->GetBinContent(i));
+	      // OscVec_pimin[counter][u][s][i-1] =  (OSC_100_pimin->GetBinContent(i));
+              //OscVec_piplus[counter][u][s][i-1] = (OSC_100_piplus->GetBinContent(i));
+	      // OscVec_K0[counter][u][s][i-1] =     (OSC_100_K0->GetBinContent(i));
+	      // OscVec_Kmin[counter][u][s][i-1] =   (OSC_100_Kmin->GetBinContent(i));
+              //OscVec_Kplus[counter][u][s][i-1] =  (OSC_100_Kplus->GetBinContent(i));
 
 	  }
 
 	delete OSC_100;
-	delete OSC_100_beam;
-        delete OSC_100_pimin;
-        delete OSC_100_piplus;
-        delete OSC_100_K0;
-        delete OSC_100_Kmin;
-        delete OSC_100_Kplus;
+	//	delete OSC_100_beam;
+	// delete OSC_100_pimin;
+	// delete OSC_100_piplus;
+        //delete OSC_100_K0;
+	// delete OSC_100_Kmin;
+        //delete OSC_100_Kplus;
 
       }
     }
     
     delete NULL_100;
-    delete NULL_100_beam;
-    delete NULL_100_pimin;
-    delete NULL_100_piplus;
-    delete NULL_100_K0;
-    delete NULL_100_Kmin;
-    delete NULL_100_Kplus;
+    //    delete NULL_100_beam;
+    // delete NULL_100_pimin;
+    //delete NULL_100_piplus;
+    //delete NULL_100_K0;
+    //delete NULL_100_Kmin;
+    // delete NULL_100_Kplus;
 
     temp_file.Close();
     counter++;
@@ -208,21 +227,21 @@ int multiple_detector_fit()
     TFile temp_file(temp_name.c_str());
     TH1D *NULL_470;TH1D *NULL_470_beam;TH1D *NULL_470_pimin;TH1D *NULL_470_piplus;TH1D *NULL_470_K0;TH1D *NULL_470_Kmin;TH1D *NULL_470_Kplus;
     NULL_470 =        (TH1D*)(temp_file.Get("NumuCC"));
-    NULL_470_beam =   (TH1D*)(temp_file.Get("NumuCC_beam"));
+        NULL_470_beam =   (TH1D*)(temp_file.Get("NumuCC_beam"));
     NULL_470_pimin =  (TH1D*)(temp_file.Get("NumuCC_pimin"));
-    NULL_470_piplus = (TH1D*)(temp_file.Get("NumuCC_piplus"));
+     NULL_470_piplus = (TH1D*)(temp_file.Get("NumuCC_piplus"));
     NULL_470_K0 =     (TH1D*)(temp_file.Get("NumuCC_K0"));
-    NULL_470_Kmin =   (TH1D*)(temp_file.Get("NumuCC_Kmin"));
+     NULL_470_Kmin =   (TH1D*)(temp_file.Get("NumuCC_Kmin"));
     NULL_470_Kplus =  (TH1D*)(temp_file.Get("NumuCC_Kplus"));
 
     nbinsE = NULL_470->GetNbinsX();
     std::cout << nbinsE << std::endl;
       for(int i = 1; i <= nbinsE; i++){
 	  NULLVec[counter][i-1] =        (NULL_470->GetBinContent(i));
-          NULLVec_beam[counter][i-1] =   (NULL_470_beam->GetBinContent(i));
-          NULLVec_pimin[counter][i-1] =  (NULL_470_pimin->GetBinContent(i));
+	      NULLVec_beam[counter][i-1] =   (NULL_470_beam->GetBinContent(i));
+	   NULLVec_pimin[counter][i-1] =  (NULL_470_pimin->GetBinContent(i));
           NULLVec_piplus[counter][i-1] = (NULL_470_piplus->GetBinContent(i));
-          NULLVec_K0[counter][i-1] =     (NULL_470_K0->GetBinContent(i));
+	   NULLVec_K0[counter][i-1] =     (NULL_470_K0->GetBinContent(i));
           NULLVec_Kmin[counter][i-1] =   (NULL_470_Kmin->GetBinContent(i));
           NULLVec_Kplus[counter][i-1] =  (NULL_470_Kplus->GetBinContent(i));
 
@@ -248,17 +267,17 @@ int multiple_detector_fit()
 	TString syst_Kplus; TString Kplus = "_Kplus"; syst_Kplus = name+upoint+name2+mul+Kplus;
        
 	OSC_470 = (TH1D*)(temp_file.Get(nom));
-        OSC_470_beam = (TH1D*)(temp_file.Get(syst_beam));
-        OSC_470_pimin = (TH1D*)(temp_file.Get(syst_pimin));
+	        OSC_470_beam = (TH1D*)(temp_file.Get(syst_beam));
+	 OSC_470_pimin = (TH1D*)(temp_file.Get(syst_pimin));
         OSC_470_piplus = (TH1D*)(temp_file.Get(syst_piplus));
-        OSC_470_K0 = (TH1D*)(temp_file.Get(syst_K0));
+	 OSC_470_K0 = (TH1D*)(temp_file.Get(syst_K0));
         OSC_470_Kmin = (TH1D*)(temp_file.Get(syst_Kmin));
         OSC_470_Kplus = (TH1D*)(temp_file.Get(syst_Kplus));
 
 
           for(int i = 1; i <= nbinsE; i++){
               OscVec[counter][u][s][i-1] =        (OSC_470->GetBinContent(i));
-	      OscVec_beam[counter][u][s][i-1] =   (OSC_470_beam->GetBinContent(i));
+	          OscVec_beam[counter][u][s][i-1] =   (OSC_470_beam->GetBinContent(i));
               OscVec_pimin[counter][u][s][i-1] =  (OSC_470_pimin->GetBinContent(i));
               OscVec_piplus[counter][u][s][i-1] = (OSC_470_piplus->GetBinContent(i));
               OscVec_K0[counter][u][s][i-1] =     (OSC_470_K0->GetBinContent(i));
@@ -268,18 +287,18 @@ int multiple_detector_fit()
 	  }
 
 	delete OSC_470;
-	delete OSC_470_beam;
-        delete OSC_470_pimin;
+		delete OSC_470_beam;
+	 delete OSC_470_pimin;
         delete OSC_470_piplus;
         delete OSC_470_K0;
         delete OSC_470_Kmin;
-        delete OSC_470_Kplus;
+	 delete OSC_470_Kplus;
 
       }
     }
     
     delete NULL_470;
-    delete NULL_470_beam;
+        delete NULL_470_beam;
     delete NULL_470_pimin;
     delete NULL_470_piplus;
     delete NULL_470_K0;
@@ -389,6 +408,28 @@ int multiple_detector_fit()
 	  if(Erri == Errj) Fig2->SetBinContent(Erri+1, sqrt(M2 (Erri,Errj)));
 	  if(Erri == Errj) Fig1->SetBinContent(Erri+1, sqrt(M1 (Erri,Errj)));
 	  if(Erri == Errj) Fig0->SetBinContent(Erri+1, sqrt(M0 (Erri,Errj)));
+	  if(Erri == Errj && Lcol == 0){ 
+	    std::cout << " ND bin " << Ecol+1 << std::endl;
+	    ND_err->SetBinContent(Ecol+1, 100*sqrt(M6 (Erri,Errj)));
+	    ND_err_Kplus->SetBinContent(Ecol+1, 100*sqrt(M5 (Erri,Errj)));
+            ND_err_Kmin->SetBinContent(Ecol+1, 100*sqrt(M4 (Erri,Errj)));
+            ND_err_K0->SetBinContent(Ecol+1, 100*sqrt(M3 (Erri,Errj)));
+            ND_err_piplus->SetBinContent(Ecol+1, 100*sqrt(M2 (Erri,Errj)));
+            ND_err_pimin->SetBinContent(Ecol+1, 100*sqrt(M1 (Erri,Errj)));
+            ND_err_beam->SetBinContent(Ecol+1, 100*sqrt(M0 (Erri,Errj)));
+	  }
+
+          if(Erri == Errj && Lcol == 1){ 
+	    std::cout << " FD bin " << Ecol+1 << std::endl;
+	    FD_err->SetBinContent(Ecol+1, 100*sqrt(M6 (Erri,Errj)));
+            FD_err_Kplus->SetBinContent(Ecol+1, 100*sqrt(M5 (Erri,Errj)));
+            FD_err_Kmin->SetBinContent(Ecol+1, 100*sqrt(M4 (Erri,Errj)));
+            FD_err_K0->SetBinContent(Ecol+1, 100*sqrt(M3 (Erri,Errj)));
+            FD_err_piplus->SetBinContent(Ecol+1, 100*sqrt(M2 (Erri,Errj)));
+            FD_err_pimin->SetBinContent(Ecol+1, 100*sqrt(M1 (Erri,Errj)));
+            FD_err_beam->SetBinContent(Ecol+1, 100*sqrt(M0 (Erri,Errj)));
+	  }
+
 	  //	  std::cout << M6 (Erri,Errj) << "\t";
 
           Errj++;
@@ -450,7 +491,7 @@ int multiple_detector_fit()
 
 
 
-  TLatex *ND = new TLatex(.15,.01,"LAr1-ND (100m) ");
+  TLatex *ND = new TLatex(.15,.01,"LAr1-ND (200m) ");
   ND->SetNDC();
   ND->SetTextFont(62);
   ND->SetTextSize(0.04);
@@ -462,7 +503,7 @@ int multiple_detector_fit()
   MD->SetTextSize(0.04);
   MD->Draw();
 
-  TLatex *ND45 = new TLatex(.05,.15,"LAr1-ND (100m) ");
+  TLatex *ND45 = new TLatex(.05,.15,"LAr1-ND (200m) ");
   ND45->SetNDC();
   ND45->SetTextAngle(90);
   ND45->SetTextFont(62);
@@ -1148,7 +1189,7 @@ TMatrixFBase->GetZaxis()->SetTitleFont(62);
     split->SetLineWidth(2);
     split->DrawLine(19,0.01,19,4);
     
-    TLatex *ND = new TLatex(.23,.85,"LAr1-ND (100m) ");
+    TLatex *ND = new TLatex(.23,.85,"LAr1-ND (200m) ");
     ND->SetNDC();
     ND->SetTextFont(62);
     ND->SetTextSize(0.05);
@@ -1370,8 +1411,91 @@ TMatrixFBase->GetZaxis()->SetTitleFont(62);
     MD->Draw();
     
     c80->Print("FractionalErrors_beam_absolute.pdf");
+
+    TCanvas* c9 = new TCanvas("c9","",800,400);
+    c9->SetLeftMargin(.1);
+    c9->SetBottomMargin(.15);
+    c9->SetTopMargin(.05);
+    c9->SetRightMargin(.05);
+    c9->SetLogy();
+    c9->cd();
+
     
+    ND_err->GetYaxis()->SetTitle("Fractional Uncertainty [%]");
+    ND_err->GetXaxis()->SetTitle("Neutrino Energy [GeV]");
+    ND_err->GetYaxis()->SetTitleFont(62);
+    ND_err->GetXaxis()->SetTitleFont(62);
+    ND_err->GetYaxis()->SetLabelFont(62);
+    ND_err->GetXaxis()->SetLabelFont(62);
+    ND_err->GetYaxis()->CenterTitle();
+    ND_err->GetYaxis()->SetTitleSize(0.06);
+    ND_err->GetXaxis()->SetTitleSize(0.6);
+    ND_err->GetXaxis()->SetLabelSize(0.06);
+    ND_err->GetYaxis()->SetLabelSize(0.06);
+    ND_err->GetYaxis()->SetTitleOffset(0.8);
+    ND_err->GetXaxis()->SetTitleOffset(1.5);
+    ND_err->SetStats(0);
+    ND_err->SetMinimum(1.1);
+    ND_err->SetMaximum(100);
+    ND_err->GetYaxis()->SetNdivisions(509);
+    ND_err->GetXaxis()->SetNdivisions(509);
+    
+    ND_err->SetLineWidth(4);
+    ND_err->SetLineColor(kBlue-3);
+    ND_err->Draw("h");
+    FD_err->SetLineWidth(3);
+    FD_err->SetLineStyle(2);
+    FD_err->SetLineColor(kRed-3);
+    FD_err->Draw("h same");
+    
+    TLegend* leg3=new TLegend(0.2,0.7,0.4,0.8);
+    leg3->SetFillStyle(0);
+    leg3->SetFillColor(0);
+    leg3->SetBorderSize(0);
+    leg3->SetTextFont(62);
+    leg3->SetTextSize(0.03);
+    leg3->AddEntry(ND_err,"LAr1-ND (200m)","L");
+    leg3->AddEntry(FD_err,"T600 (600m, on axis)","L");
+    leg3->Draw();
  
+
+    TCanvas* c9 = new TCanvas("c9","",800,400);
+    c9->SetLeftMargin(.1);
+    c9->SetBottomMargin(.15);
+    c9->SetTopMargin(.05);
+    c9->SetRightMargin(.05);
+    c9->SetLogy();
+    c9->cd();
+
+    ND_err_piplus->GetYaxis()->SetTitle("#pi#lower[-0.4]{-} Fractional Uncertainty [%]");
+    ND_err_piplus->GetXaxis()->SetTitle("Neutrino Energy [GeV]");
+    ND_err_piplus->GetYaxis()->SetTitleFont(62);
+    ND_err_piplus->GetXaxis()->SetTitleFont(62);
+    ND_err_piplus->GetYaxis()->SetLabelFont(62);
+    ND_err_piplus->GetXaxis()->SetLabelFont(62);
+    ND_err_piplus->GetYaxis()->CenterTitle();
+    ND_err_piplus->GetYaxis()->SetTitleSize(0.06);
+    ND_err_piplus->GetXaxis()->SetTitleSize(0.6);
+    ND_err_piplus->GetXaxis()->SetLabelSize(0.06);
+    ND_err_piplus->GetYaxis()->SetLabelSize(0.06);
+    ND_err_piplus->GetYaxis()->SetTitleOffset(0.8);
+    ND_err_piplus->GetXaxis()->SetTitleOffset(1.5);
+    ND_err_piplus->SetStats(0);
+    ND_err_piplus->SetMinimum(1.1);
+    ND_err_piplus->SetMaximum(100);
+    ND_err_piplus->GetYaxis()->SetNdivisions(509);
+    ND_err_piplus->GetXaxis()->SetNdivisions(509);
+    
+    ND_err_piplus->SetLineWidth(4);
+    ND_err_piplus->SetLineColor(kBlue-3);
+    ND_err_piplus->Draw("h");
+    FD_err_piplus->SetLineWidth(3);
+    FD_err_piplus->SetLineStyle(2);
+    FD_err_piplus->SetLineColor(kRed-3);
+    FD_err_piplus->Draw("h same");
+    leg3->Draw();
+
+  
   cout<<"\nEnd of routine.\n";
 
   return 0;
