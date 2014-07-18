@@ -82,11 +82,11 @@ void plot(std::string sens = "5s"){
 
   // First, want the names of all the chi2 files to read in:
   std::vector<TString> files;
-  files.push_back("output/chi2_Surface_LAr1ND_100m_T600_ShapeOnly.root");
-  files.push_back("output/chi2_Surface_LAr1ND_150m_T600_ShapeOnly.root");
-  files.push_back("output/chi2_Surface_LAr1ND_200m_T600_ShapeOnly.root");
+  files.push_back("output/chi2_Surface_LAr1ND_100m_T600_Shape_and_Rate.root");
+  files.push_back("output/chi2_Surface_LAr1ND_150m_T600_Shape_and_Rate.root");
+  files.push_back("output/chi2_Surface_LAr1ND_200m_T600_Shape_and_Rate.root");
 
-  TString referenceFile = "output/chi2_Surface_LAr1ND_100m_T600_ShapeOnly.root";
+  TString referenceFile = "output/chi2_Surface_LAr1ND_100m_T600_Shape_and_Rate.root";
 
   std::vector<int> colors;
   colors.push_back(kBlack);
@@ -268,11 +268,10 @@ void plot(std::string sens = "5s"){
   // graphsForPlotting.front() -> SetMinimum()
   // etc.
   // 
-  TH2D *hr1__1 = new TH2D("hr1__1","",500,0.1,dm2max,500,1.1,10);
+  TH2D *hr1__1 = new TH2D("hr1__1","",500,0.1,dm2max,500,0.1,13);
   hr1__1->SetDirectory(0);
   hr1__1->SetStats(0);
   hr1__1->GetYaxis()->SetTitle("C.L. Coverage of 100m 5#sigma  C.L. [#sigma]");
-  // hr1__1->GetYaxis()->SetTitle("Ratio of 90% C.L. Limits");
   hr1__1->GetYaxis()->CenterTitle(true);
   hr1__1->GetYaxis()->SetLabelFont(62);
   hr1__1->GetYaxis()->SetLabelOffset(0.003);
@@ -330,7 +329,19 @@ void plot(std::string sens = "5s"){
   tex_eff->SetTextSize(0.025);
   tex_eff->Draw();
 
+  TLatex *tex_ana = new TLatex(.18,.7,"Shape and Rate Analysis");
+  tex_ana->SetNDC();
+  tex_ana->SetTextFont(62);
+  tex_ana->SetTextSize(0.03);
+  tex_ana->Draw();
 
+  /*  TLatex *tex_sca = new TLatex(.18,.66,"ND Stats. Scaled to 100m");
+  tex_sca->SetNDC();
+  tex_sca->SetTextFont(62);
+  tex_sca->SetTextColor(kRed-3);
+  tex_sca->SetTextSize(0.025);
+  tex_sca->Draw();
+  */
   std::cout << "Finished plotting!" << std::endl;
 
   return;
