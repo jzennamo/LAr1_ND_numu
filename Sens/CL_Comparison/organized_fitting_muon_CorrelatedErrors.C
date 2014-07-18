@@ -99,7 +99,7 @@ int multiple_detector_fit()
 	bool use470m = false;		//Include the detector at 470m?
 	bool use700m = true;		//Include the detector at 700m?
 
-	bool shape_only = false;
+	bool shape_only = true;
 	bool I_break_now = true;
 	bool forceRemake = false;
 
@@ -130,7 +130,7 @@ int multiple_detector_fit()
 	//grid boundaries
 	Double_t dm2min = 0.01;                       //eV**2
 	Double_t dm2max = 100.;                       //eV**2
-	Double_t sin22thmin = 0.0001;
+	Double_t sin22thmin = 0.001;
 	Double_t sin22thmax = 1.0;
 	
 	bool useNearDetStats = true; 			// Only matters if the covariance matrix vector is empty.
@@ -508,7 +508,7 @@ int multiple_detector_fit()
 
 		  //This is the Error Matrix Equation (See Dave's Thesis)
 
-		  M (Erri,Errj) += 0*(NomVec[Lrow][Erow]-SystVec[Lrow][u][6][Erow])*(NomVec[Lcol][Ecol]-SystVec[Lcol][u][6][Ecol]);
+		  M (Erri,Errj) += (NomVec[Lrow][Erow]-SystVec[Lrow][u][6][Erow])*(NomVec[Lcol][Ecol]-SystVec[Lcol][u][6][Ecol]);
 		  n++;
 		}
 		
@@ -523,7 +523,7 @@ int multiple_detector_fit()
 		  M (Erri,Errj) /= NomVec[Lrow][Erow]*NomVec[Lcol][Ecol]; 
 
 		  // Now  take the real statistics to fill the Error Matrix
-		  M(Erri, Errj) *= 0*NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
+		  M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
 
 		  // Add Stat. Errors
 		  if(Erri == Errj){ 
@@ -588,7 +588,7 @@ int multiple_detector_fit()
 		for(int Ecol = 0; Ecol < nbinsE; Ecol++){
 
 		  M (Erri,Errj) /= NomVec[Lrow][Erow]*NomVec[Lcol][Ecol];
-		  M(Erri, Errj) *= 0*NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
+		  M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
 		  
 		  if(Erri == Errj){ M (Erri, Errj) += NULLVec[Lrow][Erow];}
 
@@ -737,7 +737,7 @@ int multiple_detector_fit()
 	printf("\nDrawing sensitivity curves...\n");
 	
 
-	TFile *file1 = new TFile("output/chi2_Surface_LAr1ND_100m_T600_Shape_and_Rate_NoFlux_StatMatch.root","RECREATE");
+	TFile *file1 = new TFile("output/chi2_Surface_LAr1ND_100m_T600_ShapeOnly.root","RECREATE");
 	chi2->Write();
 	sens90->Write();
 	sens3s->Write();

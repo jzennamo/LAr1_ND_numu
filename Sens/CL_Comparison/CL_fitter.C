@@ -82,11 +82,11 @@ void plot(std::string sens = "5s"){
 
   // First, want the names of all the chi2 files to read in:
   std::vector<TString> files;
-  files.push_back("output/chi2_Surface_LAr1ND_100m_T600_Shape_and_Rate.root");
-  files.push_back("output/chi2_Surface_LAr1ND_150m_T600_Shape_and_Rate.root");
-  files.push_back("output/chi2_Surface_LAr1ND_200m_T600_Shape_and_Rate.root");
+  files.push_back("output/chi2_Surface_LAr1ND_100m_T600_ShapeOnly.root");
+  files.push_back("output/chi2_Surface_LAr1ND_150m_T600_ShapeOnly.root");
+  files.push_back("output/chi2_Surface_LAr1ND_200m_T600_ShapeOnly.root");
 
-  TString referenceFile = "output/chi2_Surface_LAr1ND_100m_T600_Shape_and_Rate.root";
+  TString referenceFile = "output/chi2_Surface_LAr1ND_100m_T600_ShapeOnly.root";
 
   std::vector<int> colors;
   colors.push_back(kBlack);
@@ -112,7 +112,7 @@ void plot(std::string sens = "5s"){
   int npoints = 500;
   // configure the dm2, sin22th points:
   double dm2min(0.01), dm2max(100.0);
-  double sin22thmin(0.0001), sin22thmax(1.0);
+  double sin22thmin(0.001), sin22thmax(1.0);
 
 // dm2 = pow(10.,(TMath::Log10(dm2min)+(dm2point*1./npoints)*TMath::Log10(dm2max/dm2min)));
 // sin22th = pow(10.,(TMath::Log10(sin22thmin)+(sin22thpoint*1./npoints)*TMath::Log10(sin22thmax/sin22thmin)));

@@ -1,0 +1,17 @@
+To run:
+
+first run over "organized_fitting_muon_CorrelatedErrors.C" with the detectors and options you want
+
+NOTE: Be sure to change the name of the output root file at the end! 
+
+These output root files are stored in the "\output" directory
+
+Then you will use those as inputs to "Chi2_Surface.C"
+
+to run Chi2_Surface.C
+
+do:
+
+> root Chi2_Surface.C+
+
+enjoy the pretty outputs! 
