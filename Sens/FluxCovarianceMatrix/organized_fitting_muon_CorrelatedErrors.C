@@ -223,8 +223,8 @@ int multiple_detector_fit()
 	  nbinsE = NULL_100->GetNbinsX();
 	 
 	  for(int i = 1; i <= nbinsE; i++){
-	    NULLVec[counter].push_back((NULL_100->GetBinContent(i)));
-	    NomVec[counter][i-1] = (Nom_100->GetBinContent(i));
+	    NULLVec[counter].push_back(1*(NULL_100->GetBinContent(i)));
+	    NomVec[counter][i-1] = 1*(Nom_100->GetBinContent(i));
 	  }
 
 	  for(int dm = 0; dm <= npoints; dm++){
@@ -235,7 +235,7 @@ int multiple_detector_fit()
 	    OSC_100 = (TH1D*)(temp_file.Get(name.c_str()));
 	    OSC_100->Rebin(1);
 	    for(int i = 1; i <= nbinsE; i++){
-	      OscVec[counter][dm].push_back((OSC_100->GetBinContent(i)));
+	      OscVec[counter][dm].push_back(1*(OSC_100->GetBinContent(i)));
 	    }
 	    delete OSC_100;
 	  }
@@ -255,7 +255,7 @@ int multiple_detector_fit()
 	      SYST_100 = (TH1D*)(temp_file_syst.Get(name));
 	      SYST_100->Rebin(1);
 	      for(int i = 1; i <= nbinsE; i++){
-		SystVec[counter][u][s][i-1] = (SYST_100->GetBinContent(i));
+		SystVec[counter][u][s][i-1] = 1*(SYST_100->GetBinContent(i));
 	      }
 	      delete SYST_100;
 	    } 
@@ -714,12 +714,12 @@ int multiple_detector_fit()
 	    }
 	    TMatrixT <float> CVscaled(nbinsE*nL,1);
 	    
+
 	    for(int i = 0; i < nbinsE*nL; i++){
-	    
-	      CVscaled(i,0) = Scaling[i]*(CV(i,0));	    
-	    
+	      CVscaled(i,0) = Scaling[i]*(CV(i,0));   
 	    }
 
+	    
 	    TMatrixT <float> Final(nbinsE*nL,1);
             TMatrixT <float> FinalT(1,nbinsE*nL);
 
@@ -757,7 +757,15 @@ int multiple_detector_fit()
 	    //	    std::cout << "chi2 : " << chisq << std::endl;
 	    //    	      chi2->Fill(sin22th,DMpoint,chisq);
 
-	      if (chisq <= deltachisq5s){y5s[dm2] = DMpoint; x5s[dm2] = sin22th;}
+	      if (chisq <= deltachisq5s){
+		y5s[dm2] = DMpoint; x5s[dm2] = sin22th;
+		std::cout << "\Delta m^{2} : " << DMpoint << ", sin22theta : " << sin22th << std::endl;
+		for(int i = 0; i < nbinsE; i++){
+		  std::cout << i << ", SF = " << Scaling[i] << ";";
+		}
+		std::cout << " ####################### "<< std::endl;
+
+	      }
 	      if (chisq <= deltachisq3s){y3s[dm2] = DMpoint; x3s[dm2] = sin22th;}
 	      if (chisq <= deltachisq90){y90[dm2] = DMpoint; x90[dm2] = sin22th;}	      
 	      
@@ -835,7 +843,7 @@ int multiple_detector_fit()
         tex_mode->SetTextSize(0.025);
         tex_mode->Draw();	
 
-        TLatex *tex_un = new TLatex(.18,.89,"Statistical and Flux Uncert. Only");
+        TLatex *tex_un = new TLatex(.18,.89,"Statistical Uncertainty Only");
         tex_un->SetNDC();
         tex_un->SetTextFont(62);
         tex_un->SetTextSize(0.025);
@@ -894,10 +902,10 @@ int multiple_detector_fit()
 	//	gROOT->ProcessLine(".x ./minisciboon_plot_numu.c(c3)");
 
 	sens90->Draw("l same");
-	legt->AddEntry(sens90,"90\% CL","l");
-	sens3s->Draw("l same");
+      	legt->AddEntry(sens90,"90\% CL","l");
+	//sens3s->Draw("l same");
 	legt->AddEntry(sens3s,"3#sigma CL","l");
-       	sens5s->Draw("l same");
+       	//sens5s->Draw("l same");
 	legt->AddEntry(sens5s,"5#sigma CL","l");
 	TLine *gdummy3 = new TLine();
 	gdummy3->SetLineColor(kRed-3);
@@ -905,7 +913,7 @@ int multiple_detector_fit()
         gdummy3->SetLineWidth(2);
 	//	legt->AddEntry(gdummy3,"MiniBooNE + SciBooNE 90% CL","l");
 	legt->Draw();
-	
+       
 	/*    TLegend* leg3=new TLegend(0.2,0.2,0.4,0.35);
 	      leg3->SetFillStyle(0);
 	      leg3->SetFillColor(0);
@@ -924,10 +932,10 @@ int multiple_detector_fit()
 	     }
 	*/
 
-	//       c3 -> Print("ContourComparison/Sens_Matrix_LAr1ND_100m_T600_off_axis_Shape_and_Rate.C");
+        //c3 -> Print("ContourComparison/Sens_Matrix_LAr1ND_100m_T600_on_axis_ShapeOnly_NoFlux_StatMatch.C");
 
 	c3 -> Print("Sens_Matrix_LAr1-ND_100m_T600_on_axis_Shape_and_Rate.pdf");
-       	//c3 -> Print("Sens_Matrix_LAr1-ND_100m_MicroBooNE_ShapeOnly.pdf");
+       	//c3 -> Print("Sens_Matrix_LAr1-ND_100m_T600_off_axis_ShapeOnly.pdf");
 
 
 	cout<<"\nEnd of routine.\n";

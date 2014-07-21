@@ -191,7 +191,7 @@ int multiple_detector_fit()
 	  TFile temp_file(temp_name.c_str());
 	  TH1D *NULL_100;
 	  NULL_100 = (TH1D*)(temp_file.Get("NumuCC"));      
-
+	
 	  nbinsE = NULL_100->GetNbinsX();
 
 	  for(int i = 1; i <= nbinsE; i++){
@@ -741,6 +741,7 @@ int multiple_detector_fit()
         ND_null_hmhs->SetLineColor(kBlack);
         ND_null_hmhs->SetMinimum(0.5);
 	ND_null_hmhs->GetYaxis()->SetRangeUser(10000,2000000);
+	std::cout << "Total Event Count : " << ND_null_hmhs->Integral() << std::endl; 
         ND_null_hmhs->Draw("h");
 
         ND_highm_highs->SetMarkerColor(kRed);

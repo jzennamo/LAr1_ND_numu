@@ -184,7 +184,13 @@ int multiple_detector_fit()
 
   int N = 0;
 
+  TH1D *Fig6 = new TH1D("Fig6",";;",mbins,0,mbins);
   TH1D *Fig5 = new TH1D("Fig5",";;",mbins,0,mbins);
+  TH1D *Fig4 = new TH1D("Fig4",";;",mbins,0,mbins);
+  TH1D *Fig3 = new TH1D("Fig3",";;",mbins,0,mbins);
+  TH1D *Fig2 = new TH1D("Fig2",";;",mbins,0,mbins);
+  TH1D *Fig1 = new TH1D("Fig1",";;",mbins,0,mbins);
+  TH1D *Fig0 = new TH1D("Fig0",";;",mbins,0,mbins);
 
   int Erri = 0, Errj = 0;
 
@@ -240,9 +246,15 @@ int multiple_detector_fit()
           M1 (Erri,Errj) /= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];
           M0 (Erri,Errj) /= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];
 	  
-	  if(Erri == Errj) Fig5->SetBinContent(Erri+1, sqrt(M6 (Erri,Errj)));
+	  if(Erri == Errj) Fig6->SetBinContent(Erri+1, sqrt(M6 (Erri,Errj)));
+      if(Erri == Errj) Fig5->SetBinContent(Erri+1, sqrt(M5 (Erri,Errj)));
+      if(Erri == Errj) Fig4->SetBinContent(Erri+1, sqrt(M4 (Erri,Errj)));
+      if(Erri == Errj) Fig3->SetBinContent(Erri+1, sqrt(M3 (Erri,Errj)));
+      if(Erri == Errj) Fig2->SetBinContent(Erri+1, sqrt(M2 (Erri,Errj)));
+      if(Erri == Errj) Fig1->SetBinContent(Erri+1, sqrt(M1 (Erri,Errj)));
+      if(Erri == Errj) Fig0->SetBinContent(Erri+1, sqrt(M0 (Erri,Errj)));
 
-	  //	  std::cout << M6 (Erri,Errj) << "\t";
+      std::cout << M6 (Erri,Errj) << "\t";
 
           Errj++;
 
@@ -292,6 +304,7 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
+
   TLine *split = new TLine();
   split->SetLineStyle(2);
   split->SetLineWidth(5);
@@ -308,7 +321,7 @@ int multiple_detector_fit()
   ND->SetTextSize(0.04);
   ND->Draw();
 
-  TLatex *MD = new TLatex(.55,.01,"T600 (on axis)");
+  TLatex *MD = new TLatex(.5,.01,"T600 (600m, on axis)");
   MD->SetNDC();
   MD->SetTextFont(62);
   MD->SetTextSize(0.04);
@@ -321,7 +334,7 @@ int multiple_detector_fit()
   ND45->SetTextSize(0.04);
   ND45->Draw();
 
-  TLatex *MD45 = new TLatex(.05,.59,"T600 (on axis)");
+  TLatex *MD45 = new TLatex(.05,.54,"T600 (600m, on axis)");
   MD45->SetNDC();
   MD45->SetTextAngle(90);
   MD45->SetTextFont(62);
@@ -334,18 +347,8 @@ int multiple_detector_fit()
   Total->SetTextSize(0.045);
   Total->Draw();
 
-  c6->Print("total_matrix.pdf");
+  //  c6->Print("total_matrix.pdf");
 
-
-  TCanvas* c8 = new TCanvas("c8","",700,700);
-  c8->SetLeftMargin(.1);
-  c8->SetBottomMargin(.1);
-  c8->SetTopMargin(.1);
-  c8->SetRightMargin(.2);
-  c8->cd();
-  Fig5->SetLineWidth(4);
-  Fig5->Draw("");
-  
 
 
   TCanvas* c61 = new TCanvas("c61","",700,700);
@@ -358,11 +361,9 @@ int multiple_detector_fit()
   C6.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  //  TMatrixFBase->GetZaxis()->SetRangeUser(-0.6,1);
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  //  TMatrixFBase->GetZaxis()->SetTitle("Combined Correlation Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -391,25 +392,26 @@ int multiple_detector_fit()
   Total->SetTextSize(0.045);
   Total->Draw();
 
-  c61->Print("total_correlation_matrix.pdf");
+  //  c61->Print("total_correlation_matrix.pdf");
 
-  /*
+ 
 
   TCanvas* c5 = new TCanvas("c5","",700,700);
   c5->SetLeftMargin(.1);
   c5->SetBottomMargin(.1);
-  c5->SetTopMargin(.1);
-  c5->SetRightMargin(.2);
+  c5->SetTopMargin(.075);
+  c5->SetRightMargin(.15);
   c5->cd();
 
   M5.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.05,0.4);
-  TMatrixFBase->GetZaxis()->SetTitleFont(62);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-0.005,0.045);
+  
+TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("K^{+} Covariance Matrix");
+  //  TMatrixFBase->GetZaxis()->SetTitle("K^{+} Covariance Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -419,29 +421,45 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kBlue);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} K#lower[-0.15]{+} Fractional Error Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
+
+
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
-
-  //  c5->Print("../Figs/mult5_matrix.pdf");
+  //  c5->Print("mult5_matrix.pdf");
 
   TCanvas* c51 = new TCanvas("c51","",700,700);
   c51->SetLeftMargin(.1);
   c51->SetBottomMargin(.1);
-  c51->SetTopMargin(.1);
-  c51->SetRightMargin(.2);
+  c51->SetTopMargin(.075);
+  c51->SetRightMargin(.15);
   c51->cd();
 
   C5.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.6,1);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-1,1);
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("K^{+} Correlation Matrix");
+  //  TMatrixFBase->GetZaxis()->SetTitle("K#lower[-0.15]{+} Correlation Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -451,29 +469,44 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kYellow);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} K#lower[-0.15]{+} Correlation Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
+
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
-
-  //  c51->Print("../Figs/mult5_correlation_matrix.pdf");
+  //  c51->Print("mult5_correlation_matrix.pdf");
 
   TCanvas* c4 = new TCanvas("c4","",700,700);
   c4->SetLeftMargin(.1);
   c4->SetBottomMargin(.1);
-  c4->SetTopMargin(.1);
-  c4->SetRightMargin(.2);
+  c4->SetTopMargin(.075);
+  c4->SetRightMargin(.15);
   c4->cd();
 
   M4.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.05,0.4);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-0.005,0.045);
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("K^{-} Covariance Matrix");
+  //TMatrixFBase->GetZaxis()->SetTitle("K#lower[-0.15]{-} Covariance Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -483,30 +516,46 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kBlue);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} K#lower[-0.15]{-} Fractional Error Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
+
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
 
-  //  c4->Print("../Figs/mult4_matrix.pdf");
+  //  c4->Print("mult4_matrix.pdf");
 
   TCanvas* c41 = new TCanvas("c41","",700,700);
   c41->SetLeftMargin(.1);
   c41->SetBottomMargin(.1);
-  c41->SetTopMargin(.1);
-  c41->SetRightMargin(.2);
+  c41->SetTopMargin(.075);
+  c41->SetRightMargin(.15);
   c41->cd();
 
   C4.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.6,1);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-1,1);
 
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("K^{-} Correlation Matrix");
+  //  TMatrixFBase->GetZaxis()->SetTitle("K#lower[-0.15]{-} Correlation Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -516,32 +565,46 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kYellow);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} K#lower[-0.15]{-} Correlation Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
 
-  //  c41->Print("../Figs/mult4_correlation_matrix.pdf");
+  //  c41->Print("mult4_correlation_matrix.pdf");
 
 
 
   TCanvas* c3 = new TCanvas("c3","",700,700);
   c3->SetLeftMargin(.1);
   c3->SetBottomMargin(.1);
-  c3->SetTopMargin(.1);
-  c3->SetRightMargin(.2);
+  c3->SetTopMargin(.075);
+  c3->SetRightMargin(.15);
   c3->cd();
 
   M3.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.05,0.4);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-0.005,0.045);
 
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("K^{0} Covariance Matrix");
+  //TMatrixFBase->GetZaxis()->SetTitle("K#lower[-0.15]{0} Covariance Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -551,30 +614,45 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kBlue);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} K#lower[-0.15]{0} Fractional Error Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
 
-  //  c3->Print("../Figs/mult3_matrix.pdf");
+  //  c3->Print("mult3_matrix.pdf");
 
   TCanvas* c31 = new TCanvas("c31","",700,700);
   c31->SetLeftMargin(.1);
   c31->SetBottomMargin(.1);
-  c31->SetTopMargin(.1);
-  c31->SetRightMargin(.2);
+  c31->SetTopMargin(.075);
+  c31->SetRightMargin(.15);
   c31->cd();
 
   C3.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.6,1);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-1,1);
 
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("K^{0} Correlation Matrix");
+  //TMatrixFBase->GetZaxis()->SetTitle("K#lower[-0.15]{0} Correlation Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -584,30 +662,46 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kYellow);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} K#lower[-0.15]{0} Correlation Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
+
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
 
-  //  c31->Print("../Figs/mult3_correlation_matrix.pdf");
+  //  c31->Print("mult3_correlation_matrix.pdf");
 
 
   TCanvas* c2 = new TCanvas("c2","",700,700);
   c2->SetLeftMargin(.1);
   c2->SetBottomMargin(.1);
-  c2->SetTopMargin(.1);
-  c2->SetRightMargin(.2);
+  c2->SetTopMargin(.075);
+  c2->SetRightMargin(.15);
   c2->cd();
 
   M2.Draw("COLZ");
   gStyle->SetPalette(56,0);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.05,0.4);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-0.005,0.045);
   TMatrixFBase->SetContour(999);
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("#pi^{+} Covariance Matrix");
+  //TMatrixFBase->GetZaxis()->SetTitle("#pi#lower[-0.15]{+} Covariance Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -617,30 +711,46 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kBlue);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} #pi#lower[-0.15]{+} Fractional Error Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
+
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
 
-  //  c2->Print("../Figs/mult2_matrix.pdf");
+  //  c2->Print("mult2_matrix.pdf");
 
   TCanvas* c21 = new TCanvas("c21","",700,700);
   c21->SetLeftMargin(.1);
   c21->SetBottomMargin(.1);
-  c21->SetTopMargin(.1);
-  c21->SetRightMargin(.2);
+  c21->SetTopMargin(.075);
+  c21->SetRightMargin(.15);
   c21->cd();
 
   C2.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.6,1);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-1,1);
 
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("#pi^{+} Correlation Matrix");
+  //TMatrixFBase->GetZaxis()->SetTitle("#pi#lower[-0.15]{+} Correlation Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -650,31 +760,45 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kYellow);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} #pi#lower[-0.15]{+} Correlation Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
 
-  c21->Print("../Figs/mult2_correlation_matrix.pdf");
+  //  c21->Print("mult2_correlation_matrix.pdf");
 
 
   TCanvas* c1 = new TCanvas("c1","",700,700);
   c1->SetLeftMargin(.1);
   c1->SetBottomMargin(.1);
-  c1->SetTopMargin(.1);
-  c1->SetRightMargin(.2);
+  c1->SetTopMargin(.075);
+  c1->SetRightMargin(.15);
   c1->cd();
 
   M1.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.05,0.4);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-0.005,0.045);
 
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("#pi^{-} Covariance Matrix");
+  //TMatrixFBase->GetZaxis()->SetTitle("#pi#lower[-0.15]{-} Covariance Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -684,30 +808,44 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kBlue);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} #pi#lower[-0.15]{-} Fractional Error Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
 
-  c1->Print("../Figs/mult1_matrix.pdf");
+  //  c1->Print("mult1_matrix.pdf");
 
   TCanvas* c11 = new TCanvas("c11","",700,700);
   c11->SetLeftMargin(.1);
   c11->SetBottomMargin(.1);
-  c11->SetTopMargin(.1);
-  c11->SetRightMargin(.2);
+  c11->SetTopMargin(.075);
+  c11->SetRightMargin(.15);
   c11->cd();
 
   C1.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.6,1);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-1,1);
 
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("#pi^{-} Correlation Matrix");
+  //  TMatrixFBase->GetZaxis()->SetTitle("#pi#lower[-0.15]{-} Correlation Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -717,31 +855,45 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kYellow);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} #pi#lower[-0.15]{-} Correlation Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
 
-  c11->Print("../Figs/mult1_correlation_matrix.pdf");
+  //  c11->Print("mult1_correlation_matrix.pdf");
 
 
   TCanvas* c0 = new TCanvas("c0","",700,700);
   c0->SetLeftMargin(.1);
   c0->SetBottomMargin(.1);
-  c0->SetTopMargin(.1);
-  c0->SetRightMargin(.2);
+  c0->SetTopMargin(.075);
+  c0->SetRightMargin(.15);
   c0->cd();
 
   M0.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.05,0.4);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-0.005,0.045);
 
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("Beam UniSim Covariance Matrix");
+  //  TMatrixFBase->GetZaxis()->SetTitle("Beam UniSim Covariance Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -751,30 +903,44 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kBlue);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} Beam Fractional Error Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
 
-  c0->Print("../Figs/mult0_matrix.pdf");
+  //  c0->Print("mult0_matrix.pdf");
 
   TCanvas* c01 = new TCanvas("c01","",700,700);
   c01->SetLeftMargin(.1);
   c01->SetBottomMargin(.1);
-  c01->SetTopMargin(.1);
-  c01->SetRightMargin(.2);
+  c01->SetTopMargin(.075);
+  c01->SetRightMargin(.15);
   c01->cd();
 
   C0.Draw("COLZ");
   gStyle->SetPalette(56,0);
   TMatrixFBase->SetContour(999);
-  TMatrixFBase->GetZaxis()->SetRangeUser(-0.6,1);
+  //TMatrixFBase->GetZaxis()->SetRangeUser(-1,1);
 
   TMatrixFBase->GetZaxis()->SetTitleFont(62);
   TMatrixFBase->GetZaxis()->SetLabelFont(62);
   TMatrixFBase->GetZaxis()->SetTitleSize(0.045);
-  TMatrixFBase->GetZaxis()->SetTitle("Beam UniSim Correlation Matrix");
+  //  TMatrixFBase->GetZaxis()->SetTitle("Beam UniSim Correlation Matrix");
   TMatrixFBase->GetZaxis()->SetTitleOffset(1.5);
   TMatrixFBase->GetXaxis()->SetTitle("");
   TMatrixFBase->GetXaxis()->SetLabelSize(0);
@@ -784,13 +950,273 @@ int multiple_detector_fit()
   TMatrixFBase->GetYaxis()->SetLabelSize(0);
   TMatrixFBase->SetStats(0);
 
+  TLine *split = new TLine();
+  split->SetLineStyle(2);
+  split->SetLineWidth(5);
+  split->SetLineColor(kYellow);
+  split->DrawLineNDC(.1,.51,.849,.51);
+  split->DrawLineNDC(.475,.101,.475,.930);
+  add_plot_label("|            0.2 #minus 3.0 GeV            |            0.2 #minus 3.0 GeV            | ", 0.48,0.08,0.03);
+
+  TLatex *Total = new TLatex(.2,.96,"#nu#lower[0.3]{#mu} Beam Correlation Matrix");
+  Total->SetNDC();
+  Total->SetTextFont(62);
+  Total->SetTextSize(0.045);
+  Total->Draw();
+
   ND->Draw();
   MD->Draw();
   ND45->Draw();
   MD45->Draw();
 
-  c01->Print("../Figs/mult0_correlation_matrix.pdf");
-  */
+  //  c01->Print("mult0_correlation_matrix.pdf");
+ 
+  TCanvas* c86 = new TCanvas("c86","",800,400);
+  c86->SetLeftMargin(.1);
+  c86->SetBottomMargin(.1);
+  c86->SetTopMargin(.05);
+  c86->SetRightMargin(.05);
+  c86->cd();
+
+  Fig6->GetYaxis()->SetTitle("Fractional Error");
+  Fig6->GetYaxis()->SetTitleFont(62);
+  Fig6->GetXaxis()->SetTitleFont(62);
+  Fig6->GetYaxis()->SetLabelFont(62);
+  Fig6->GetXaxis()->SetLabelFont(62);
+  Fig6->GetYaxis()->CenterTitle();
+  Fig6->GetYaxis()->SetTitleSize(0.06);
+  Fig6->GetYaxis()->SetTitleOffset(0.8);
+  Fig6->GetXaxis()->SetLabelSize(0.06);
+  Fig6->GetYaxis()->SetLabelSize(0.06);
+  Fig6->GetXaxis()->SetTitleOffset(1.5);
+  Fig6->SetStats(0);
+  Fig6->SetMinimum(-0.01);
+  Fig6->SetMaximum(0.21);
+  Fig6->SetMarkerStyle(8);
+  Fig6->GetYaxis()->SetNdivisions(509);
+  Fig6->GetXaxis()->SetNdivisions(509);
+  Fig6->Draw("P");
+  split->SetLineColor(1);
+  split->SetLineWidth(2);
+  split->DrawLine(19,-0.01,19,0.21);
+
+  TLatex *ND = new TLatex(.23,.85,"LAr1-ND (100m) ");
+  ND->SetNDC();
+  ND->SetTextFont(62);
+  ND->SetTextSize(0.05);
+  ND->Draw();
+
+  TLatex *MD = new TLatex(.65,.85,"T600 (600m, on axis)");
+  MD->SetNDC();
+  MD->SetTextFont(62);
+  MD->SetTextSize(0.05);
+  MD->Draw();
+
+  //  c86->Print("FractionalErrors_Total.pdf");
+
+  TCanvas* c85 = new TCanvas("c85","",800,400);
+  c85->SetLeftMargin(.1);
+  c85->SetBottomMargin(.1);
+  c85->SetTopMargin(.05);
+  c85->SetRightMargin(.05);
+  c85->cd();
+
+  Fig5->GetYaxis()->SetTitle("K#lower[-0.2]{+} Fractional Error");
+  Fig5->GetYaxis()->SetTitleFont(62);
+  Fig5->GetXaxis()->SetTitleFont(62);
+  Fig5->GetYaxis()->SetLabelFont(62);
+  Fig5->GetXaxis()->SetLabelFont(62);
+  Fig5->GetYaxis()->CenterTitle();
+  Fig5->GetYaxis()->SetTitleSize(0.06);
+  Fig5->GetYaxis()->SetTitleOffset(0.8);
+  Fig5->GetXaxis()->SetLabelSize(0.06);
+  Fig5->GetYaxis()->SetLabelSize(0.06);
+  Fig5->GetXaxis()->SetTitleOffset(1.5);
+  Fig5->SetStats(0);
+  Fig5->SetMinimum(-0.01);
+  Fig5->SetMaximum(0.21);
+  Fig5->SetMarkerStyle(8);
+  Fig5->GetYaxis()->SetNdivisions(509);
+  Fig5->GetXaxis()->SetNdivisions(509);
+  Fig5->Draw("P");
+  split->SetLineColor(1);
+  split->SetLineWidth(2);
+  split->DrawLine(19,-0.01,19,0.21);
+  ND->Draw();
+  MD->Draw();
+
+  //  c85->Print("FractionalErrors_Kplus.pdf");
+
+  
+  TCanvas* c84 = new TCanvas("c84","",800,400);
+  c84->SetLeftMargin(.1);
+  c84->SetBottomMargin(.1);
+  c84->SetTopMargin(.05);
+  c84->SetRightMargin(.05);
+  c84->cd();
+
+  Fig4->GetYaxis()->SetTitle("K#lower[-0.2]{-} Fractional Error");
+  Fig4->GetYaxis()->SetTitleFont(62);
+  Fig4->GetXaxis()->SetTitleFont(62);
+  Fig4->GetYaxis()->SetLabelFont(62);
+  Fig4->GetXaxis()->SetLabelFont(62);
+  Fig4->GetYaxis()->CenterTitle();
+  Fig4->GetYaxis()->SetTitleSize(0.06);
+  Fig4->GetYaxis()->SetTitleOffset(0.8);
+  Fig4->GetXaxis()->SetLabelSize(0.06);
+  Fig4->GetYaxis()->SetLabelSize(0.06);
+  Fig4->GetXaxis()->SetTitleOffset(1.5);
+  Fig4->SetStats(0);
+  Fig4->SetMinimum(-0.01);
+  Fig4->SetMaximum(0.21);
+  Fig4->SetMarkerStyle(8);
+  Fig4->GetYaxis()->SetNdivisions(509);
+  Fig4->GetXaxis()->SetNdivisions(509);
+  Fig4->Draw("P");
+  split->SetLineColor(1);
+  split->SetLineWidth(2);
+  split->DrawLine(19,-0.01,19,0.21);
+  ND->Draw();
+  MD->Draw();
+
+  //  c84->Print("FractionalErrors_Kmin.pdf");
+
+
+  TCanvas* c83 = new TCanvas("c83","",800,400);
+  c83->SetLeftMargin(.1);
+  c83->SetBottomMargin(.1);
+  c83->SetTopMargin(.05);
+  c83->SetRightMargin(.05);
+  c83->cd();
+
+  Fig3->GetYaxis()->SetTitle("K#lower[-0.2]{0} Fractional Error");
+  Fig3->GetYaxis()->SetTitleFont(62);
+  Fig3->GetXaxis()->SetTitleFont(62);
+  Fig3->GetYaxis()->SetLabelFont(62);
+  Fig3->GetXaxis()->SetLabelFont(62);
+  Fig3->GetYaxis()->CenterTitle();
+  Fig3->GetYaxis()->SetTitleSize(0.06);
+  Fig3->GetYaxis()->SetTitleOffset(0.8);
+  Fig3->GetXaxis()->SetLabelSize(0.06);
+  Fig3->GetYaxis()->SetLabelSize(0.06);
+  Fig3->GetXaxis()->SetTitleOffset(1.5);
+  Fig3->SetStats(0);
+  Fig3->SetMinimum(-0.01);
+  Fig3->SetMaximum(0.21);
+  Fig3->SetMarkerStyle(8);
+  Fig3->GetYaxis()->SetNdivisions(509);
+  Fig3->GetXaxis()->SetNdivisions(509);
+  Fig3->Draw("P");
+  split->SetLineColor(1);
+  split->SetLineWidth(2);
+  split->DrawLine(19,-0.01,19,0.21);
+  ND->Draw();
+  MD->Draw();
+
+  //  c83->Print("FractionalErrors_K0.pdf");
+
+
+  TCanvas* c82 = new TCanvas("c82","",800,400);
+  c82->SetLeftMargin(.1);
+  c82->SetBottomMargin(.1);
+  c82->SetTopMargin(.05);
+  c82->SetRightMargin(.05);
+  c82->cd();
+
+  Fig2->GetYaxis()->SetTitle("#pi#lower[-0.2]{+} Fractional Error");
+  Fig2->GetYaxis()->SetTitleFont(62);
+  Fig2->GetXaxis()->SetTitleFont(62);
+  Fig2->GetYaxis()->SetLabelFont(62);
+  Fig2->GetXaxis()->SetLabelFont(62);
+  Fig2->GetYaxis()->CenterTitle();
+  Fig2->GetYaxis()->SetTitleSize(0.06);
+  Fig2->GetYaxis()->SetTitleOffset(0.8);
+  Fig2->GetXaxis()->SetLabelSize(0.06);
+  Fig2->GetYaxis()->SetLabelSize(0.06);
+  Fig2->GetXaxis()->SetTitleOffset(1.5);
+  Fig2->SetStats(0);
+  Fig2->SetMinimum(-0.01);
+  Fig2->SetMaximum(0.21);
+  Fig2->SetMarkerStyle(8);
+  Fig2->GetYaxis()->SetNdivisions(509);
+  Fig2->GetXaxis()->SetNdivisions(509);
+  Fig2->Draw("P");
+  split->SetLineColor(1);
+  split->SetLineWidth(2);
+  split->DrawLine(19,-0.01,19,0.21);
+  ND->Draw();
+  MD->Draw();
+
+  //  c82->Print("FractionalErrors_piplus.pdf");
+
+
+  TCanvas* c81 = new TCanvas("c81","",800,400);
+  c81->SetLeftMargin(.1);
+  c81->SetBottomMargin(.1);
+  c81->SetTopMargin(.05);
+  c81->SetRightMargin(.05);
+  c81->cd();
+
+  Fig1->GetYaxis()->SetTitle("#pi#lower[-0.2]{-} Fractional Error");
+  Fig1->GetYaxis()->SetTitleFont(62);
+  Fig1->GetXaxis()->SetTitleFont(62);
+  Fig1->GetYaxis()->SetLabelFont(62);
+  Fig1->GetXaxis()->SetLabelFont(62);
+  Fig1->GetYaxis()->CenterTitle();
+  Fig1->GetYaxis()->SetTitleSize(0.06);
+  Fig1->GetYaxis()->SetTitleOffset(0.8);
+  Fig1->GetXaxis()->SetLabelSize(0.06);
+  Fig1->GetYaxis()->SetLabelSize(0.06);
+  Fig1->GetXaxis()->SetTitleOffset(1.5);
+  Fig1->SetStats(0);
+  Fig1->SetMinimum(-0.01);
+  Fig1->SetMaximum(0.21);
+  Fig1->SetMarkerStyle(8);
+  Fig1->GetYaxis()->SetNdivisions(509);
+  Fig1->GetXaxis()->SetNdivisions(509);
+  Fig1->Draw("P");
+  split->SetLineColor(1);
+  split->SetLineWidth(2);
+  split->DrawLine(19,-0.01,19,0.21);
+  ND->Draw();
+  MD->Draw();
+
+  //  c81->Print("FractionalErrors_pimin.pdf");
+
+
+  TCanvas* c80 = new TCanvas("c80","",800,400);
+  c80->SetLeftMargin(.1);
+  c80->SetBottomMargin(.1);
+  c80->SetTopMargin(.05);
+  c80->SetRightMargin(.05);
+  c80->cd();
+
+  Fig0->GetYaxis()->SetTitle("Beam Fractional Error");
+  Fig0->GetYaxis()->SetTitleFont(62);
+  Fig0->GetXaxis()->SetTitleFont(62);
+  Fig0->GetYaxis()->SetLabelFont(62);
+  Fig0->GetXaxis()->SetLabelFont(62);
+  Fig0->GetYaxis()->CenterTitle();
+  Fig0->GetYaxis()->SetTitleSize(0.06);
+  Fig0->GetYaxis()->SetTitleOffset(0.8);
+  Fig0->GetXaxis()->SetLabelSize(0.06);
+  Fig0->GetYaxis()->SetLabelSize(0.06);
+  Fig0->GetXaxis()->SetTitleOffset(1.5);
+  Fig0->SetStats(0);
+  Fig0->SetMinimum(-0.01);
+  Fig0->SetMaximum(0.21);
+  Fig0->SetMarkerStyle(8);
+  Fig0->GetYaxis()->SetNdivisions(509);
+  Fig0->GetXaxis()->SetNdivisions(509);
+  Fig0->Draw("P");
+  split->SetLineColor(1);
+  split->SetLineWidth(2);
+  split->DrawLine(19,-0.01,19,0.21);
+  ND->Draw();
+  MD->Draw();
+
+  //  c80->Print("FractionalErrors_beam.pdf");
+
  
   cout<<"\nEnd of routine.\n";
 

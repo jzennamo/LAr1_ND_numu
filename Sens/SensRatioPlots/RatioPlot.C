@@ -1549,9 +1549,9 @@ void RatioPlot(){
         graph_150->GetPoint(i,x_150,y_150);
         graph_200->GetPoint(i,x_200,y_200);
 
-        graph_100_R->SetPoint(i, (y_100), (x_100/x_100));
-        graph_150_R->SetPoint(i, (y_150), (x_100/x_150));
-        graph_200_R->SetPoint(i, (y_200), (x_100/x_200));
+        graph_100_R->SetPoint(i, (y_100), 100*(x_100-x_100)/x_100);
+        graph_150_R->SetPoint(i, (y_150), 100*(x_100-x_150)/x_100);
+        graph_200_R->SetPoint(i, (y_200), 100*(x_100-x_200)/x_100);
         
     }
 
@@ -1561,7 +1561,7 @@ void RatioPlot(){
     c3->SetBorderMode(0);
     c3->SetBorderSize(2);
     c3->SetLogx();
-    c3->SetLogy();
+    //   c3->SetLogy();
     c3->SetLeftMargin(0.15);
     c3->SetRightMargin(0.05);
     c3->SetTopMargin(0.05);
@@ -1569,7 +1569,7 @@ void RatioPlot(){
     c3->SetFrameBorderMode(0);
     c3->SetFrameBorderMode(0);
     
-    TH2D *hr1__1 = new TH2D("hr1__1","",500,0.05,100,500,0.1,10);
+    TH2D *hr1__1 = new TH2D("hr1__1","",500,0.05,100,500,-400,300);
     hr1__1->SetDirectory(0);
     hr1__1->SetStats(0);
     

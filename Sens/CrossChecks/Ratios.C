@@ -60,7 +60,7 @@ int multiple_detector_fit()
   int nbinsE = 0;
   int Entries = 0;
   if (use470m){
-    std::string temp_name = "../MatrixFiles/combined_ntuple_470m_nu_processed_numu.root";
+    std::string temp_name = "../MatrixFiles/combined_ntuple_600m_onaxis_nu_processed_numu.root";
 
     TFile temp_file(temp_name.c_str());
     TH1D *NULL_470;
@@ -162,7 +162,7 @@ int multiple_detector_fit()
 
 
   TCanvas* c6 = new TCanvas("c6","",700,700);
-  c6->SetLeftMargin(.1);
+  c6->SetLeftMargin(.15);
   c6->SetBottomMargin(.1);
   c6->SetTopMargin(.05);
   c6->SetRightMargin(.05);
@@ -189,14 +189,23 @@ int multiple_detector_fit()
   ratio->SetLineColor(kBlack);
   ratio->SetLineWidth(3);
   ratio->SetLineStyle(1);
-  ratio->GetXaxis()->SetTitle("Smeared Neutrino Energy");
-  ratio->GetXaxis()->SetLabelSize(0.03);
-  ratio->GetXaxis()->SetTitleOffset(1.5);
-  ratio->GetYaxis()->SetTitle("Ratio MicroBooNE / LAr1-ND (200m)");
-  ratio->GetYaxis()->SetTitleOffset(1.5);
-  ratio->GetYaxis()->SetLabelSize(0.03);
+  ratio->GetXaxis()->SetTitle("Neutrino Energy [GeV]");
+  ratio->GetXaxis()->SetLabelSize(0.04);
+  ratio->GetXaxis()->SetTitleFont(62);
+  ratio->GetXaxis()->SetLabelFont(62);
+  ratio->GetYaxis()->SetLabelFont(62);
+  ratio->GetXaxis()->SetTitleSize(0.04);
+  ratio->GetYaxis()->SetTitleFont(62);
+  ratio->GetYaxis()->SetTitleSize(0.04);
+  ratio->GetXaxis()->CenterTitle();
+  ratio->GetYaxis()->CenterTitle();
+  ratio->GetXaxis()->SetTitleOffset(1.2);
+  ratio->GetYaxis()->SetTitle("T600 (600m, on axis) / LAr1-ND (200m)");
+  ratio->GetYaxis()->SetTitleOffset(1.7);
+  ratio->GetYaxis()->SetLabelSize(0.04);
   ratio->SetStats(0);
-  ratio->GetYaxis()->SetRangeUser(0,1); 
+  ratio->GetYaxis()->SetRangeUser(0.41,1); 
+  ratio->GetYaxis()->SetNdivisions(506);
   ratio->Draw("h");
 
   for(int u = 0; u < 1000; u++){
@@ -214,6 +223,16 @@ int multiple_detector_fit()
     ratio_Syst[u][6]->Draw("h same");
   
   }
+
+  TLegend* legt1=new TLegend(0.2,0.8,0.6,0.85);
+  legt1->SetFillStyle(0);
+  legt1->SetFillColor(0);
+  legt1->SetBorderSize(0);
+  legt1->SetTextFont(62);
+  legt1->SetTextSize(0.03);
+  legt1->AddEntry(ratio,"Nominal #nu#lower[0.4]{#mu} Event Ratio","l");
+  legt1->Draw();
+
 
   double rms = 0;
   int n = 0;
@@ -250,7 +269,7 @@ int multiple_detector_fit()
 
   //ratio->GetYaxis()->SetRangeUser(0,0.15); 
    ratio->Draw("h same");
-   c6->Print("total_ratio_200m_MicroBooNE.pdf");
+   c6->Print("total_ratio_200m.pdf");
   
 
   TCanvas* c10 = new TCanvas("c10","",700,700);
@@ -263,20 +282,32 @@ int multiple_detector_fit()
   RMS->SetLineColor(kBlack);
   RMS->SetLineWidth(3);
   RMS->SetLineStyle(1);
-  RMS->GetXaxis()->SetTitle("Smeared Neutrino Energy");
-  RMS->GetXaxis()->SetLabelSize(0.03);
-  RMS->GetXaxis()->SetTitleOffset(1.5);
-  RMS->GetYaxis()->SetTitle("RMS for Product of MultiSim Weights [%]");
-  RMS->GetYaxis()->SetTitleOffset(1.5);
-  RMS->GetYaxis()->SetLabelSize(0.03);
+  RMS->SetLineWidth(3);
+  RMS->SetLineStyle(1);
+  RMS->GetXaxis()->SetLabelSize(0.04);
+  RMS->GetXaxis()->SetTitleFont(62);
+  RMS->GetXaxis()->SetTitleSize(0.04);
+  RMS->GetYaxis()->SetTitleFont(62);
+  RMS->GetYaxis()->SetTitleSize(0.04);
+  RMS->GetXaxis()->SetLabelFont(62);
+  RMS->GetYaxis()->SetLabelFont(62);
+  RMS->GetXaxis()->CenterTitle();
+  RMS->GetYaxis()->CenterTitle();
+  RMS->GetXaxis()->SetTitleOffset(1.2);
+  RMS->GetYaxis()->SetTitleOffset(1.2);
+  RMS->GetYaxis()->SetLabelSize(0.04);
   RMS->SetStats(0);
-  RMS->GetYaxis()->SetRangeUser(0,10);
+  RMS->GetYaxis()->SetRangeUser(0.11,0.4);
+  RMS->GetYaxis()->SetNdivisions(506);
+  RMS->GetXaxis()->SetTitle("Neutrino Energy [GeV]");
+  RMS->GetYaxis()->SetTitle("Percent Uncertainty [%]");
+  RMS->GetYaxis()->SetRangeUser(0.1,6);
  RMS->Draw("h");
  Err->SetLineColor(kGray);
  Err->SetLineStyle(7);
  Err->SetLineWidth(3);
  Err->Draw("h same");
- Err_data->SetLineColor(kGreen+3);
+ Err_data->SetLineColor(kBlack);
  Err_data->SetLineStyle(7);
  Err_data->SetLineWidth(3);
  Err_data->Draw("h same");
@@ -285,13 +316,14 @@ int multiple_detector_fit()
  legt->SetFillStyle(0);
  legt->SetFillColor(0);
  legt->SetBorderSize(0);
+ legt->SetTextFont(62);
  legt->SetTextSize(0.03);
- legt->AddEntry(RMS,"RMS for MicroBooNE over LAr1-ND (200m)","l");
- legt->AddEntry(Err,"Fractional MC Stat Uncert.","l");
- legt->AddEntry(Err_data,"Fractional Data Stat Uncert.","l");
+ legt->AddEntry(RMS,"RMS for Ratio","l");
+ legt->AddEntry(Err,"MC Stat Uncertainty","l");
+ legt->AddEntry(Err_data,"Data Stat Uncertainty","l");
  legt->Draw();
 
-  c10->Print("total_rms_200m_MicroBooNE.pdf");
+  c10->Print("total_rms_200m.pdf");
 
  /*
 
