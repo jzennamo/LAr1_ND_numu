@@ -1,0 +1,10 @@
+1) Finish binning studies
+
+2) Chi2 surface studies
+ -> Study the surfaces for different configurations and with different assumptions
+ -> Study the projections of the surfaces onto a given \Delta m^{2} point and compare the curves 
+
+3) Jelly Bean plots
+ -> Inject signal and see how precisely we can resolve it
+ -> Will want to restructure the code such that we can activate this with a boolean 
+
