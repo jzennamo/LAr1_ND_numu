@@ -61,6 +61,8 @@ int multiple_detector_fit()
   std::cout<< "Entries : " << thisNtuple->GetEntries() << std::endl;
   
   TGraph2D *g = new TGraph2D();
+  TGraph2D *ThreeSigma = new TGraph2D();
+  TGraph2D *OneSigma = new TGraph2D();
 
   //Cycle through each entry in the ntuple
   while (i_entry < thisNtuple->GetEntries())
@@ -70,6 +72,20 @@ int multiple_detector_fit()
       thisNtuple->GetEntry(i_entry);
 
       //store them in the TGraph for plotting
+      if(sqrt(chi2_temp) > 3){
+	ThreeSigma->SetPoint(i_entry, sin22th_temp, dm2_temp, 3);
+      }
+      else{
+        ThreeSigma->SetPoint(i_entry, sin22th_temp, dm2_temp, sqrt(chi2_temp));
+      }
+
+      if(sqrt(chi2_temp) > 1){
+	OneSigma->SetPoint(i_entry, sin22th_temp, dm2_temp, 1);
+      }
+      else{
+        OneSigma->SetPoint(i_entry, sin22th_temp, dm2_temp, sqrt(chi2_temp));
+      }    
+ 
       if(sqrt(chi2_temp) > 5){    //cut off at 5\sigma for presentation
       	g->SetPoint(i_entry, sin22th_temp, dm2_temp, sqrt(25));
       }
@@ -98,36 +114,42 @@ int multiple_detector_fit()
     c1->SetLogx();
     c1->cd();
     
-    g->SetTitle("");
-    g->GetXaxis()->SetTitle("sin^{2}2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}}");
-    g->GetXaxis()->CenterTitle(true);
-    g->GetXaxis()->SetLabelFont(62);
-    g->GetXaxis()->SetLabelOffset(0.003);
-    g->GetXaxis()->SetLabelSize(0.03);
-    g->GetXaxis()->SetTitleSize(0.05);
-    g->GetXaxis()->SetTitleFont(62);
-    g->GetXaxis()->SetTitleOffset(1.75);
+    OneSigma->SetTitle("");
+    OneSigma->GetXaxis()->SetTitle("sin^{2}2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}}");
+    OneSigma->GetXaxis()->CenterTitle(true);
+    OneSigma->GetXaxis()->SetLabelFont(62);
+    OneSigma->GetXaxis()->SetLabelOffset(0.003);
+    OneSigma->GetXaxis()->SetLabelSize(0.03);
+    OneSigma->GetXaxis()->SetTitleSize(0.05);
+    OneSigma->GetXaxis()->SetTitleFont(62);
+    OneSigma->GetXaxis()->SetTitleOffset(1.75);
     
-    g->GetYaxis()->SetTitle("#Deltam_{41}^{2} [eV^{2}]");
-    g->GetYaxis()->CenterTitle(true);
-    g->GetYaxis()->SetLabelFont(62);
-    g->GetYaxis()->SetLabelSize(0.03);
-    g->GetYaxis()->SetTitleSize(0.05);
-    g->GetYaxis()->SetTitleFont(62);
-    g->GetYaxis()->SetTitleOffset(2.0);
+    OneSigma->GetYaxis()->SetTitle("#Deltam_{41}^{2} [eV^{2}]");
+    OneSigma->GetYaxis()->CenterTitle(true);
+    OneSigma->GetYaxis()->SetLabelFont(62);
+    OneSigma->GetYaxis()->SetLabelSize(0.03);
+    OneSigma->GetYaxis()->SetTitleSize(0.05);
+    OneSigma->GetYaxis()->SetTitleFont(62);
+    OneSigma->GetYaxis()->SetTitleOffset(2.0);
     
-    g->GetZaxis()->SetTitle("Confidence Level [#sigma]");
-    g->GetZaxis()->CenterTitle(true);
-    g->GetZaxis()->SetLabelFont(62);
-    g->GetZaxis()->SetLabelSize(0.03);
-    g->GetZaxis()->SetTitleSize(0.05);
-    g->GetZaxis()->SetTitleFont(62);
-    g->GetZaxis()->SetNdivisions(506);
-    g->GetZaxis()->SetTitleOffset(1.25);
+    OneSigma->GetZaxis()->SetTitle("Confidence Level [#sigma]");
+    OneSigma->GetZaxis()->CenterTitle(true);
+    OneSigma->GetZaxis()->SetLabelFont(62);
+    OneSigma->GetZaxis()->SetLabelSize(0.03);
+    OneSigma->GetZaxis()->SetTitleSize(0.05);
+    OneSigma->GetZaxis()->SetTitleFont(62);
+    OneSigma->GetZaxis()->SetNdivisions(506);
+    OneSigma->GetZaxis()->SetTitleOffset(1.25);
+    OneSigma->GetZaxis()->SetRangeUser(0.0000001, 5.5);
 
-    //Using "P" instead of "CONT" because it is so resource heavy it makes ROOT crash
-    //Feel free to try it though! 
-    g->Draw("P");
+
+    OneSigma->SetMarkerColor(kRed);
+    OneSigma->Draw("P");
+    
+    ThreeSigma->SetMarkerColor(kBlue);
+    ThreeSigma->Draw("Psame");
+
+    g->Draw("Psame");
 
     return 0;
     
