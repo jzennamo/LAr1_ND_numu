@@ -33,7 +33,7 @@ int multiple_detector_fit()
 /* ------------------------------ */
 
   // Fix DM2 point for slice plot (otherwise set to negative)
-  int fixedDM = -1;
+  double fixedDM = .1;
 
   bool shape_only = false;
 
@@ -45,8 +45,8 @@ int multiple_detector_fit()
   // Select any (or all) detector setups
   // Note that multiple choices are only really significant for a fixed DM, since they'll all meld together in a 3d model
   bool use100 = true;
-  bool use150 = false;
-  bool use200 = false; 
+  bool use150 = true;
+  bool use200 = true; 
 
 /* ------------------------------ */
 
@@ -94,6 +94,8 @@ int multiple_detector_fit()
 
   //extract the values from the ntuple
   int i_entry;
+  int j_entry;
+  double myDm2;
 
   // Initialize the surface plots
   TGraph2D *g[3];
@@ -125,12 +127,14 @@ for(int i = 0; i < counter; i++)				// Cycle through each detector setup
   OneSigma[i] = new TGraph2D();
   
   i_entry = 0;
+  j_entry = 0;
+
+cout << "...mydm2 = " << myDm2; 
 
   std::cout<< "Entries : " << thisNtuple[i]->GetEntries() << std::endl;
 
   while (i_entry < thisNtuple[i]->GetEntries())			// Cycle through all entries
     {
-
       //select a point in the ntuple
       thisNtuple[i]->GetEntry(i_entry);
 
@@ -143,32 +147,40 @@ for(int i = 0; i < counter; i++)				// Cycle through each detector setup
 
       if(sqrt(chi2_temp) > 5)	g[i]->SetPoint(i_entry, sin22th_temp, dm2_temp, sqrt(25));
       else	g[i]->SetPoint(i_entry, sin22th_temp, dm2_temp, sqrt(chi2_temp));
+      
+      if(fixedDM >= 0 && dm2_temp <= fixedDM)
+      {
+	if(dm2_temp > myDm2){
+	  myDm2 = dm2_temp;
+	  j_entry = 0;
+	}
+      }	
+      
+      if(fixedDM >= 0 && dm2_temp == myDm2){
 
-      if(fixedDM > 0 && dm2_temp == fixedDM){	
+	if(sqrt(chi2_temp) > 3)	ThreeSigma2D[i]->SetPoint(j_entry, sin22th_temp, 9);
+        else	ThreeSigma2D[i]->SetPoint(j_entry, sin22th_temp, chi2_temp);
 
-	if(sqrt(chi2_temp) > 3)	ThreeSigma2D[i]->SetPoint(i_entry, sin22th_temp, 3);
-        else	ThreeSigma2D[i]->SetPoint(i_entry, sin22th_temp, sqrt(chi2_temp));
+        if(sqrt(chi2_temp) > 1)	OneSigma2D[i]->SetPoint(j_entry, sin22th_temp, 1);
+        else	OneSigma2D[i]->SetPoint(j_entry, sin22th_temp, chi2_temp);
 
-        if(sqrt(chi2_temp) > 1)	OneSigma2D[i]->SetPoint(i_entry, sin22th_temp, 1);
-        else	OneSigma2D[i]->SetPoint(i_entry, sin22th_temp, sqrt(chi2_temp));
+        if(sqrt(chi2_temp) > 5)	g2D[i]->SetPoint(j_entry, sin22th_temp, 25);
+        else	g2D[i]->SetPoint(j_entry, sin22th_temp, chi2_temp);
 
-        if(sqrt(chi2_temp) > 5)	g2D[i]->SetPoint(i_entry, sin22th_temp, 5);
-        else	g2D[i]->SetPoint(i_entry, sin22th_temp, sqrt(chi2_temp));
+	j_entry++;
       }
 
       i_entry++;
     }
 }
-//cout << "Counter = " << counter;
-//cout << "...[0] points = " << g2D[0]->GetN();
-//cout << "...[1] points = " << g2D[1]->GetN();
-//cout << "...[2] points = " << g2D[2]->GetN();
+
+cout << "new final dm2 is..." << myDm2;
 
 
 
 
   // Draw the surface plot
-  if(fixedDM < 0 || counter == 1){
+  if(counter == 1){
     std::cout << "Drawing ..." << std::endl; 
     gStyle->SetOptStat(0000);
     gStyle->SetOptFit(0000);
@@ -229,7 +241,7 @@ for(int i = 0; i < counter; i++)				// Cycle through each detector setup
   }
 
 
-if(fixedDM > 0){
+if(fixedDM >= 0){
 
   TCanvas *c2 = new TCanvas("c2","Fixed DM2",800,800);
 
@@ -242,25 +254,31 @@ if(fixedDM > 0){
   c2->SetLogx();
   c2->cd();
 
-  OneSigma2D[0]->SetTitle("");
-  OneSigma2D[0]->GetXaxis()->SetTitle("sin^{2}2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}}");
-  OneSigma2D[0]->GetXaxis()->CenterTitle(true);
-  OneSigma2D[0]->GetXaxis()->SetLabelFont(62);
-  OneSigma2D[0]->GetXaxis()->SetLabelOffset(0.003);
-  OneSigma2D[0]->GetXaxis()->SetLabelSize(0.03);
-  OneSigma2D[0]->GetXaxis()->SetTitleSize(0.05);
-  OneSigma2D[0]->GetXaxis()->SetTitleFont(62);
-  OneSigma2D[0]->GetXaxis()->SetTitleOffset(1.75);
+ //mg->SetTitle("");
+   cout << "got anything? ... " << mg->GetXaxis();//->SetTitle("E_{#gamma} (GeV)");
+  // mg->GetYaxis()->SetTitle("Coefficients");
+  //mg->GetXaxis()->SetTitle("sin^{2}2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}}");
+  //mg->GetXaxis()->CenterTitle(true);
+  //mg->GetXaxis()->SetLabelFont(62);
+  //mg->GetXaxis()->SetLabelOffset(0.003);
+  //mg->GetXaxis()->SetLabelSize(0.03);
+  //mg->GetXaxis()->SetTitleSize(0.05);
+  //mg->GetXaxis()->SetTitleFont(62);
+  //mg->GetXaxis()->SetTitleOffset(1.75);
+/*
+  mg->GetYaxis()->SetTitle("Confidence Level [#sigma]");
+  mg->GetYaxis()->CenterTitle(true);
+  mg->GetYaxis()->SetLabelFont(62);
+  mg->GetYaxis()->SetLabelSize(0.03);
+  mg->GetYaxis()->SetTitleSize(0.05);
+  mg->GetYaxis()->SetTitleFont(62);
+  mg->GetYaxis()->SetNdivisions(506);
+  mg->GetYaxis()->SetTitleOffset(1.25);
+  mg->GetYaxis()->SetRangeUser(0.0000001, 5.5);
+*/
 
-  OneSigma2D[0]->GetYaxis()->SetTitle("Confidence Level [#sigma]");
-  OneSigma2D[0]->GetYaxis()->CenterTitle(true);
-  OneSigma2D[0]->GetYaxis()->SetLabelFont(62);
-  OneSigma2D[0]->GetYaxis()->SetLabelSize(0.03);
-  OneSigma2D[0]->GetYaxis()->SetTitleSize(0.05);
-  OneSigma2D[0]->GetYaxis()->SetTitleFont(62);
-  OneSigma2D[0]->GetYaxis()->SetNdivisions(506);
-  OneSigma2D[0]->GetYaxis()->SetTitleOffset(1.25);
-  OneSigma2D[0]->GetYaxis()->SetRangeUser(0.0000001, 5.5);
+
+
 
 cout << "drawing...";
 
