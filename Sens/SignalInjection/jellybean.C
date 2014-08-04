@@ -37,10 +37,20 @@ TGraph * threeSigma;
 TMarker * signalPt;
 TMarker * bestFit;
 
-int update_cov(bool shape_only, int nbinsE, int nL, int spoints);
-double chisq_calc(bool shape_only, int npoints, int nL, int nbinsE, double signalSin22th, double signalDm2, double dm2max, double dm2min, double sin22thmax, double sin22thmin);
-double getDMpt(int dm, int npoints, double dm2max, double dm2min);
-double getSin22THpt(int sint, int npoints, double sin22thmax, double sin22thmin);
+//plot properties
+Int_t npoints = 500;			// Grid Points
+Int_t spoints = 1000;			// Universes
+
+//grid boundaries
+Double_t dm2min = 0.01;			//eV**2
+Double_t dm2max = 100.;                 //eV**2
+Double_t sin22thmin = 0.0001;
+Double_t sin22thmax = 1.0;
+
+int update_cov(bool shape_only, int nbinsE, int nL);
+double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, double signalDm2);
+double getDMpt(int dm);
+double getSin22THpt(int sint);
 
 int multiple_detector_fit(){
 
@@ -53,18 +63,9 @@ int multiple_detector_fit(){
 
   bool shape_only = true;
 
-  double signal[2] = {.1,1.};	//Injected signal, in form (sin22t,dm2)
+  double signal[2] = {.1,50.};	//Injected signal, in form (sin22t,dm2)
 
   // ---------------------------------------------------------
-
-  Int_t npoints = 500;		// points in plot
-  Int_t spoints = 1000;		// universes 
-
-  //grid boundaries
-  Double_t dm2min = 0.01;                       //eV**2
-  Double_t dm2max = 100.;                       //eV**2
-  Double_t sin22thmin = 0.0001;
-  Double_t sin22thmax = 1.0;
 
   std::vector<std::string> baselines;	
   if (use100m) baselines.push_back("100m");
@@ -167,12 +168,13 @@ int multiple_detector_fit(){
   //When the file goes out of scope, the histo dies and your code will seg fault.
 
 // Build the covariance matrix
-  update_cov(shape_only, nbinsE, nL, spoints);
+  update_cov(shape_only, nbinsE, nL);
 
 // Calculate chisquared
-//  chisq_calc(shape_only,npoints,nL,nbinsE,signal[0],signal[1],dm2max,dm2min,sin22thmax,sin22thmin);
+  chisq_calc(shape_only,nL,nbinsE,signal[0],signal[1]);
 
 
+/*
 // Testing!
 double tempPerc, sinBestFit;
 double tempDm2[3] = {1,10,50};
@@ -185,17 +187,15 @@ for(int d = 0; d < 3; d++){
     std::cout << "... Sin22th: " << tempSin22th[s] << "... Dm2: " << tempDm2[d] << "... Percent difference in sin22th: " << tempPerc << "%" << std::endl;
   }
 }
-
-
-// Now that we have the chisquared surface, we may find the best fit point.
-  //signalPt = new TMarker(signal[0],signal[1],7);
-  //signalPt->SetMarkerColor(kRed);
+*/
 
 // Begin Drawing
   fiveSigma->SetMarkerSize(5);
   fiveSigma->SetMarkerColor(kBlue - 3);
+  fiveSigma->SetMarkerStyle(7);
   fiveSigma->SetLineColor(kBlue - 3);
   threeSigma->SetMarkerSize(5);
+  threeSigma->SetMarkerStyle(7);
   threeSigma->SetMarkerColor(kGreen + 3);
   threeSigma->SetLineColor(kGreen + 3);
 
@@ -270,17 +270,17 @@ for(int d = 0; d < 3; d++){
   legt->SetBorderSize(0);
   legt->SetTextSize(0.04);
 
-  fiveSigma->Draw("lp");
-  threeSigma->Draw("lpsame");
-  //bestFit->Draw("psame");
-  //signalPt->Draw("psame");
+  fiveSigma->Draw("p");
+  threeSigma->Draw("psame");
+  bestFit->Draw("psame");
+  signalPt->Draw("psame");
 
 c3->Print("Test_shape.pdf");
 
   return 0;
 }
 
-int update_cov(bool shape_only, int nbinsE, int nL, int spoints){
+int update_cov(bool shape_only, int nbinsE, int nL){
 
 //Build Matrices and Vectors
   TMatrixT <float> M(nbinsE*nL,nbinsE*nL);
@@ -393,7 +393,7 @@ int update_cov(bool shape_only, int nbinsE, int nL, int spoints){
   return 0;
 }
 
-double chisq_calc(bool shape_only, int npoints, int nL, int nbinsE, double signalSin22th, double signalDm2, double dm2max, double dm2min, double sin22thmax, double sin22thmin){
+double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, double signalDm2){
 
   // Fill Prediction Matrix
   std::vector< std::vector< TMatrixT <float> > >  Pred;
@@ -417,26 +417,34 @@ double chisq_calc(bool shape_only, int npoints, int nL, int nbinsE, double signa
 
   for(int dm = 0; dm <= npoints; dm++){
     // Here, we also try to find the closest estimate for our dm2 point within the set of npoints points
-    if(getDMpt(dm, npoints, dm2max, dm2min) <= signalDm2)  mydm2pt = dm;
-
+    if(getDMpt(dm) <= signalDm2)  mydm2pt = dm;
     for(int s = 0; s <= npoints; s++){
       Predi = 0; 
       for(int Lbin = 0; Lbin < nL; Lbin++){
         for(int Ebin = 0; Ebin < nbinsE; Ebin++){
-	  sin22th = getSin22THpt(s, npoints, sin22thmax, sin22thmin);
+	  sin22th = getSin22THpt(s);
 	  if(sin22th <= signalSin22th && s > mysinpt)  mysinpt = s;
   	  Pred[dm][s] (Predi,0) = NULLVec[Lbin][Ebin] - (OscVec[Lbin][dm][Ebin])*(sin22th);
 	  // While we're at it, set CV
-	  if(s == mysinpt && dm == mydm2pt){
-	    CV(Predi,0) = NULLVec[Lbin][Ebin] - (OscVec[Lbin][dm][Ebin])*sin22th;
-	  }
 	  Predi++;
 	}
       }
     }
   }
 
-  std::cout << "...Prediction Matrices Filled" << std::endl;
+  signalDm2 = getDMpt(mydm2pt);				// Correct signal point for resolution
+  signalSin22th = getSin22THpt(mysinpt);
+
+  for(int Lbin = 0; Lbin < nL; Lbin ++){
+    for(int Ebin = 0; Ebin < nbinsE; Ebin ++){
+      CV(Lbin*nbinsE + Ebin,0) = NULLVec[Lbin][Ebin] - (OscVec[Lbin][mydm2pt][Ebin])*signalSin22th;
+    }
+  }
+
+  signalPt = new TMarker(signalSin22th,signalDm2,7);
+  signalPt->SetMarkerColor(kRed);
+
+  std::cout << "...Prediction and Signal Matrices Filled" << std::endl;
 
 // Calculate Chi2
   fiveSigma = new TGraph();
@@ -450,7 +458,7 @@ double chisq_calc(bool shape_only, int npoints, int nL, int nbinsE, double signa
 
   for(int dm2 = 0; dm2 <= npoints; dm2++){
     for(int sint = 0; sint <= npoints; sint++){
-      sin22th = getSin22THpt(sint, npoints, sin22thmax, sin22thmin);
+      sin22th = getSin22THpt(sint);
       chisq = 0.0;
       double Scaling[nbinsE*nL];
 
@@ -497,13 +505,14 @@ double chisq_calc(bool shape_only, int npoints, int nL, int nbinsE, double signa
       Fin.Mult(middle,Final);
       chisq = Fin(0,0);
 
+
   // Draw Jellybeans
       if(chisq <= 9){
-        threeSigma->SetPoint(threeSCounter,getSin22THpt(sint,npoints,sin22thmax,sin22thmin),getDMpt(dm2,npoints,dm2max,dm2min));
+        threeSigma->SetPoint(threeSCounter,getSin22THpt(sint),getDMpt(dm2));
         threeSCounter++;
       }
-      else if(chisq <= 25) {
-	  fiveSigma->SetPoint(fiveSCounter,getSin22THpt(sint,npoints,sin22thmax,sin22thmin),getDMpt(dm2,npoints,dm2max,dm2min));
+     if(chisq <= 25) {
+	  fiveSigma->SetPoint(fiveSCounter,getSin22THpt(sint),getDMpt(dm2));
 	  fiveSCounter ++;
       }
 
@@ -511,8 +520,8 @@ double chisq_calc(bool shape_only, int npoints, int nL, int nbinsE, double signa
       if(chiLow < 0) chiLow = chisq;
       if(chisq < chiLow){
         chiLow = chisq;
-        bestFit_sin22th = getSin22THpt(sint,npoints,sin22thmax,sin22thmin);
-        bestFit_dm2 = getDMpt(dm2,npoints,dm2max,dm2min);
+        bestFit_sin22th = getSin22THpt(sint);
+        bestFit_dm2 = getDMpt(dm2);
       }
       ncounter ++;
     }
@@ -521,11 +530,11 @@ double chisq_calc(bool shape_only, int npoints, int nL, int nbinsE, double signa
   return bestFit_sin22th;
 }
 
-double getDMpt(int dm, int npoints, double dm2max, double dm2min){
+double getDMpt(int dm){
   return pow(10.,(TMath::Log10(dm2min)+ (dm * (1./npoints))*TMath::Log10(dm2max/dm2min)));
 }
 
-double getSin22THpt(int sint, int npoints, double sin22thmax, double sin22thmin){
+double getSin22THpt(int sint){
   return pow(10., (TMath::Log10(sin22thmin)+ (sint * (1./npoints))*TMath::Log10(sin22thmax/sin22thmin)));
 }
 
