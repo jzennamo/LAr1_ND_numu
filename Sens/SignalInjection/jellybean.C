@@ -174,20 +174,20 @@ int multiple_detector_fit(){
   chisq_calc(shape_only,nL,nbinsE,signal[0],signal[1]);
 
 
-/*
+
 // Testing!
 double tempPerc, sinBestFit;
 double tempDm2[3] = {1,10,50};
 double tempSin22th[5] = {.1,.2,.5,.75,1.};
 for(int d = 0; d < 3; d++){
   for(int s = 0; s < 5; s++){
-    sinBestFit = chisq_calc(shape_only,npoints,nL,nbinsE,tempSin22th[s],tempDm2[d],dm2max,dm2min,sin22thmax,sin22thmin);
+    sinBestFit = chisq_calc(shape_only,nL,nbinsE,tempSin22th[s],tempDm2[d]);
     cout << sinBestFit;
     tempPerc = 100 * (tempSin22th[s] - sinBestFit)/tempSin22th[s];
     std::cout << "... Sin22th: " << tempSin22th[s] << "... Dm2: " << tempDm2[d] << "... Percent difference in sin22th: " << tempPerc << "%" << std::endl;
   }
 }
-*/
+
 
 // Begin Drawing
   fiveSigma->SetMarkerSize(5);
@@ -425,7 +425,6 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
 	  sin22th = getSin22THpt(s);
 	  if(sin22th <= signalSin22th && s > mysinpt)  mysinpt = s;
   	  Pred[dm][s] (Predi,0) = NULLVec[Lbin][Ebin] - (OscVec[Lbin][dm][Ebin])*(sin22th);
-	  // While we're at it, set CV
 	  Predi++;
 	}
       }
@@ -465,9 +464,9 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
       if(shape_only){
         //Scale all measurements to the ND NULL levels             
         for(int Edecbin = 0; Edecbin < nbinsE; Edecbin++){
-	  Scaling[Edecbin]  = Pred[dm2][sint] (Edecbin,0);
-	  if(CV(Edecbin,0) != 0){Scaling[Edecbin] /= CV(Edecbin,0);}
-	  if(CV(Edecbin,0) == 0){ std::cout << "Scaling failed....CV==0!" << std::endl; break;}
+	  Scaling[Edecbin]  = CV (Edecbin,0);
+	  if(Pred[dm2][sint] (Edecbin,0) != 0){Scaling[Edecbin] /= Pred[dm2][sint] (Edecbin,0);}
+	  if(Pred[dm2][sint] (Edecbin,0) == 0){ std::cout << "Scaling failed....Pred==0!" << std::endl; break;}
 	}
         // Copy results from first baseline to the rest of these baselines
         int tick = 0;
@@ -485,18 +484,18 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
         }
       } // Shape and rate
 
-      TMatrixT <float> CVscaled(nbinsE*nL,1);
+      TMatrixT <float> PredScaled(nbinsE*nL,1);
 
       for(int i = 0; i < nbinsE*nL; i++){
-        CVscaled(i,0) = Scaling[i]*(CV(i,0));   
+        PredScaled(i,0) = Scaling[i]*(Pred[dm2][sint] (i,0));   
       }
 
       TMatrixT <float> Final(nbinsE*nL,1);
       TMatrixT <float> FinalT(1,nbinsE*nL);
 
       for(int Edecbin = 0; Edecbin < nbinsE*nL; Edecbin++){
-        Final(Edecbin,0) = (CVscaled(Edecbin,0)) - ((Pred[dm2][sint] (Edecbin,0))); 
-        FinalT(0,Edecbin) = (CVscaled(Edecbin,0)) - ((Pred[dm2][sint] (Edecbin,0)));
+        Final(Edecbin,0) = (CV(Edecbin,0)) - ((PredScaled (Edecbin,0))); 
+        FinalT(0,Edecbin) = (CV(Edecbin,0)) - ((PredScaled (Edecbin,0)));
       } //Sum over all detectors and energies to determine the chi2 for that osc. point	      
 
       TMatrixT <float> middle(1, nbinsE*nL);
