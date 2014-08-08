@@ -34,11 +34,21 @@ TMatrixT <float> cov;
 
 TGraph * fiveSigma;
 TGraph * threeSigma;
+TGraph * ninety;
 TMarker * signalPt;
 TMarker * bestFit;
 
+TGraph2D * chisqSurf;
+TH1D * cvHist;
+TH1D * predHist;
+TH1D * predScaledHist;
+double predSin22th;
+double predDm2;
+bool drawSurf;
+bool drawScale;
+
 //plot properties
-Int_t npoints = 500;			// Grid Points
+Int_t npoints = 500;			// Grid Pointsl
 Int_t spoints = 1000;			// Universes
 
 //grid boundaries
@@ -47,7 +57,7 @@ Double_t dm2max = 100.;                 //eV**2
 Double_t sin22thmin = 0.0001;
 Double_t sin22thmax = 1.0;
 
-int update_cov(bool shape_only, int nbinsE, int nL);
+int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th);
 double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, double signalDm2);
 double getDMpt(int dm);
 double getSin22THpt(int sint);
@@ -61,13 +71,28 @@ int multiple_detector_fit(){
   bool use470m = false;		//Include the detector at 470m?
   bool use700m = true;		//Include the detector at 700m?
 
-  bool shape_only = true;
+  bool shape_only = false;
 
-  double signal[2] = {.1,50.};	//Injected signal, in form (sin22t,dm2)
+  double signal[2] = {.05,4.};	//Injected signal, in form (sin22t,dm2)
+  bool printJelly = false;
+  std::string jellyTitle = "pngs/jellybean_dm2_10_sin22th_01.png";
+
+  // Chisq Surface(testing)
+  drawSurf = true;
+  bool printSurf = false;
+  std::string surfTitle = "chisqSurf_test.pdf";
+
+  // Scale Factor Histogram (will only work with far detector and only really significant with shape-only)
+  drawScale = false;
+  bool printScale = false;
+  std::string scaleTitle = "pngs/evd_scaleDiff.png";
+  predSin22th = .05;
+  predDm2 = 50.;
+
 
   // ---------------------------------------------------------
 
-  std::vector<std::string> baselines;	
+  std::vector<std::string> baselines;
   if (use100m) baselines.push_back("100m");
   if (use470m) baselines.push_back("470m");
   if (use700m) baselines.push_back("600m_onaxis");
@@ -125,14 +150,14 @@ int multiple_detector_fit(){
     for(int u = 0; u < spoints; u++){
       for(int s = 0; s < 7; s++){
         TH1D *SYST_BASE;
-	TString upoint = Form("%d",u);
-	TString name = "Universe_";
-	TString name2 = "_MultiSim_";
-	TString mul = Form("%d",s);
+    	TString upoint = Form("%d",u);
+    	TString name = "Universe_";
+    	TString name2 = "_MultiSim_";
+    	TString mul = Form("%d",s);
 
-	name += upoint;
-	name += name2;
-	name += mul;
+    	name += upoint;
+    	name += name2;
+    	name += mul;
 
         SYST_BASE = (TH1D*)(temp_file_syst.Get(name));
         SYST_BASE->Rebin(1);
@@ -168,36 +193,27 @@ int multiple_detector_fit(){
   //When the file goes out of scope, the histo dies and your code will seg fault.
 
 // Build the covariance matrix
-  update_cov(shape_only, nbinsE, nL);
+  update_cov(shape_only, nbinsE, nL, -1, -1);
 
 // Calculate chisquared
   chisq_calc(shape_only,nL,nbinsE,signal[0],signal[1]);
 
-
-
-// Testing!
-double tempPerc, sinBestFit;
-double tempDm2[3] = {1,10,50};
-double tempSin22th[5] = {.1,.2,.5,.75,1.};
-for(int d = 0; d < 3; d++){
-  for(int s = 0; s < 5; s++){
-    sinBestFit = chisq_calc(shape_only,nL,nbinsE,tempSin22th[s],tempDm2[d]);
-    cout << sinBestFit;
-    tempPerc = 100 * (tempSin22th[s] - sinBestFit)/tempSin22th[s];
-    std::cout << "... Sin22th: " << tempSin22th[s] << "... Dm2: " << tempDm2[d] << "... Percent difference in sin22th: " << tempPerc << "%" << std::endl;
-  }
-}
-
+// Update covariance matrix, and then do chisquared one more time with updated best fit points
+  update_cov(shape_only, nbinsE, nL, bestFit->GetY(), bestFit->GetX());
+  chisq_calc(shape_only,nL,nbinsE,bestFit->GetX(),bestFit->GetY());
 
 // Begin Drawing
   fiveSigma->SetMarkerSize(5);
-  fiveSigma->SetMarkerColor(kBlue - 3);
+  fiveSigma->SetMarkerColor(kBlue);
+  fiveSigma->SetFillColor(kBlue);
   fiveSigma->SetMarkerStyle(7);
-  fiveSigma->SetLineColor(kBlue - 3);
   threeSigma->SetMarkerSize(5);
   threeSigma->SetMarkerStyle(7);
-  threeSigma->SetMarkerColor(kGreen + 3);
-  threeSigma->SetLineColor(kGreen + 3);
+  threeSigma->SetMarkerColor(kGreen + 1);
+  threeSigma->SetFillColor(kGreen + 1);
+  ninety->SetMarkerColor(kYellow);
+  ninety->SetFillColor(kYellow);
+  ninety->SetMarkerStyle(7);
 
   printf("\nDrawing best fits...\n");
 	
@@ -233,32 +249,40 @@ for(int d = 0; d < 3; d++){
   tex_Detector->SetTextSize(0.035);
   tex_Detector->Draw(); 
  
-  TLatex *tex_pre = new TLatex(.18,.78,"PRELIMINARY");
+  TLatex *tex_pre = new TLatex(.18,.75,"PRELIMINARY");
   tex_pre->SetNDC();
   tex_pre->SetTextFont(62);
   tex_pre->SetTextColor(kRed-3);
   tex_pre->SetTextSize(0.03);
   tex_pre->Draw();
 
-  TLatex *tex_mode = new TLatex(.18,.92,"#nu mode, CC Events");
+  char str_signal [100];
+  sprintf (str_signal, "Injected Signal - #Delta m^{2}: %.1f, sin^{2}(2#theta): %.2f", signalPt->GetY(),signalPt->GetX());
+  TLatex *tex_Signal = new TLatex(.18,.92,str_signal);
+  tex_Signal->SetNDC();
+  tex_Signal->SetTextFont(62);
+  tex_Signal->SetTextSize(0.025);
+  tex_Signal->Draw();
+
+  TLatex *tex_mode = new TLatex(.18,.89,"#nu mode, CC Events");
   tex_mode->SetNDC();
   tex_mode->SetTextFont(62);
   tex_mode->SetTextSize(0.025);
-  tex_mode->Draw();	
+  tex_mode->Draw();
 
-  TLatex *tex_un = new TLatex(.18,.89,"Statistical Uncertainty Only");
+  TLatex *tex_un = new TLatex(.18,.86,"Statistical Uncertainty Only");
   tex_un->SetNDC();
   tex_un->SetTextFont(62);
   tex_un->SetTextSize(0.025);
   tex_un->Draw();
 
-  TLatex *tex_E = new TLatex(.18,.86,"Reconstructed Energy");
+  TLatex *tex_E = new TLatex(.18,.83,"Reconstructed Energy");
   tex_E->SetNDC();
   tex_E->SetTextFont(62);
   tex_E->SetTextSize(0.025);
   tex_E->Draw();
 
-  TLatex *tex_eff = new TLatex(.18,.83,"80% #nu#lower[0.4]{#mu} Efficiency");
+  TLatex *tex_eff = new TLatex(.18,.80,"80% #nu#lower[0.4]{#mu} Efficiency");
   tex_eff->SetNDC();
   tex_eff->SetTextFont(62);
   tex_eff->SetTextSize(0.025);
@@ -268,19 +292,144 @@ for(int d = 0; d < 3; d++){
   legt->SetFillStyle(0);
   legt->SetFillColor(0);
   legt->SetBorderSize(0);
-  legt->SetTextSize(0.04);
+  legt->SetTextFont(62);
+  legt->SetTextSize(0.03);
+  legt->AddEntry(fiveSigma,"5 #sigma Confidence","f");
+  legt->AddEntry(threeSigma,"3 #sigma Confidence","f");
+  legt->AddEntry(ninety,"90% Confidence","f");
+  legt->AddEntry(signalPt,"Signal","p");
+  legt->Draw();
 
   fiveSigma->Draw("p");
   threeSigma->Draw("psame");
-  bestFit->Draw("psame");
+  ninety->Draw("psame");
+//  bestFit->Draw("psame");
   signalPt->Draw("psame");
 
-c3->Print("Test_shape.pdf");
+  if(printJelly){
+    c3->Print(jellyTitle.c_str());
+  }
+
+// Print Chisq Surface!
+  if(drawSurf){
+    TCanvas* c4 = new TCanvas("c4","Sensitivity",700,700);
+    c4->SetLeftMargin(.15);
+    c4->SetBottomMargin(.15);
+    c4->SetTopMargin(.05);
+    c4->SetRightMargin(.05);
+    c4->SetLogx();
+    c4->SetLogy();
+
+    chisqSurf->SetTitle("");
+    chisqSurf->GetXaxis()->SetTitle("sin^{2}2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}}");
+    chisqSurf->GetXaxis()->CenterTitle(true);
+    chisqSurf->GetXaxis()->SetLabelFont(62);
+    chisqSurf->GetXaxis()->SetLabelOffset(0.003);
+    chisqSurf->GetXaxis()->SetLabelSize(0.03);
+    chisqSurf->GetXaxis()->SetTitleSize(0.05);
+    chisqSurf->GetXaxis()->SetTitleFont(62);
+    chisqSurf->GetXaxis()->SetTitleOffset(1.75);
+
+    chisqSurf->GetYaxis()->SetTitle("#Deltam_{41}^{2} [eV^{2}]");
+    chisqSurf->GetYaxis()->CenterTitle(true);
+    chisqSurf->GetYaxis()->SetLabelFont(62);
+    chisqSurf->GetYaxis()->SetLabelSize(0.03);
+    chisqSurf->GetYaxis()->SetTitleSize(0.05);
+    chisqSurf->GetYaxis()->SetTitleFont(62);
+    chisqSurf->GetYaxis()->SetTitleOffset(2.0);
+
+    chisqSurf->GetZaxis()->SetTitle("Confidence Level [#sigma]");
+    chisqSurf->GetZaxis()->CenterTitle(true);
+    chisqSurf->GetZaxis()->SetLabelFont(62);
+    chisqSurf->GetZaxis()->SetLabelSize(0.03);
+    chisqSurf->GetZaxis()->SetTitleSize(0.05);
+    chisqSurf->GetZaxis()->SetTitleFont(62);
+    chisqSurf->GetZaxis()->SetNdivisions(506);
+    chisqSurf->GetZaxis()->SetTitleOffset(1.25);
+    chisqSurf->GetZaxis()->SetRangeUser(0.0000001, 10.5);
+
+    chisqSurf->SetMarkerColor(kRed);
+    chisqSurf->Draw("P");
+
+    if(printSurf){
+      c4->Print(surfTitle.c_str());
+    }
+  }
+
+  // Draw Scale Plot
+  if(drawScale){
+    TCanvas* c5 = new TCanvas("c5","Scale Plot",700,700);
+    c5->SetLeftMargin(.15);
+    c5->SetBottomMargin(.15);
+    c5->SetTopMargin(.05);
+    c5->SetRightMargin(.05);
+    c5->cd();
+
+    cvHist->SetFillColor(0);
+    predHist->SetTitle(";sin^{2}2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}};#Deltam_{41}^{2} [eV^{2}]");
+    predHist->GetXaxis()->SetTitleOffset(1.2);
+    predHist->GetYaxis()->SetTitleOffset(1.2);
+    predHist->GetXaxis()->SetTitleFont(62);
+    predHist->GetYaxis()->SetTitleFont(62);
+    predHist->GetYaxis()->CenterTitle();
+    predHist->GetXaxis()->CenterTitle();
+    predHist->GetXaxis()->SetTitleSize(0.05);
+    predHist->GetXaxis()->SetLabelSize(0.04);
+    predHist->GetXaxis()->SetLabelOffset(0.001);
+    predHist->GetYaxis()->SetTitleSize(0.05);
+    predHist->GetYaxis()->SetLabelSize(0.04);
+    predHist->SetStats(kFALSE);
+
+    TLegend* legS=new TLegend(0.6,0.3,0.85,0.45);
+    legS->SetFillStyle(0);
+    legS->SetFillColor(0);
+    legS->SetBorderSize(0);
+    legS->SetTextFont(62);
+    legS->SetTextSize(0.03);
+    legS->AddEntry(predHist,"Prediction Vector","f");
+    legS->AddEntry(cvHist,"Signal Vector","f");
+    legS->AddEntry(predScaledHist,"Scaled Prediction","p");
+
+    cvHist->SetLineColor(kBlue-3);
+    cvHist->SetFillColor(kBlue-10);
+    predHist->SetLineColor(kRed-3);
+    predHist->SetFillColor(kRed-10);
+    predHist->SetMarkerStyle(20);
+    predScaledHist->SetMarkerStyle(3);
+
+    predHist->Draw("h");
+    cvHist->Draw("hsame");
+    predScaledHist->Draw("phsame");
+
+    legS->Draw();
+
+    char str_pred [100];
+    sprintf (str_pred, "Prediction  - #Delta m^{2}: %.1f, sin^{2}(2#theta): %.2f", predDm2, predSin22th);
+    TLatex *tex_pred = new TLatex(.54,.92,str_pred);
+    tex_pred->SetNDC();
+    tex_pred->SetTextFont(62);
+    tex_pred->SetTextSize(0.025);
+    tex_pred->Draw();
+    tex_pre->SetX(.725575);
+    tex_pre->Draw();
+    tex_mode->SetX(.727011);
+    tex_mode->Draw();
+    tex_un->SetX(.640805);
+    tex_un->Draw();
+    tex_E->SetX(.691092);
+    tex_E->Draw();
+    tex_eff->SetX(.734195);
+    tex_eff->Draw();
+
+    if(printScale){
+      c5->Print(scaleTitle.c_str());
+    }
+  }
 
   return 0;
 }
 
-int update_cov(bool shape_only, int nbinsE, int nL){
+int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th){
 
 //Build Matrices and Vectors
   TMatrixT <float> M(nbinsE*nL,nbinsE*nL);
@@ -318,7 +467,8 @@ int update_cov(bool shape_only, int nbinsE, int nL){
 	    // Build "Fractional" Error Matrix
 	    M (Erri,Errj) /= NomVec[Lrow][Erow]*NomVec[Lcol][Ecol]; 
 	    // Now  take the real statistics to fill the Error Matrix. Here is where we'll update with the best fit point.
-	    M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
+	    if(sigDm == -1)  M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
+	    else M(Erri, Errj) *= (NULLVec[Lrow][Erow] - (OscVec[Lrow][sigDm][Erow] * getSin22THpt(sigSin22th)))*(NULLVec[Lcol][Ecol] - (OscVec[Lcol][sigDm][Ecol] * getSin22THpt(sigSin22th)));
 	    // Add Stat. Errors
 	    if(Erri == Errj){ 
 	      M (Erri, Errj) += NULLVec[Lrow][Erow];
@@ -372,7 +522,8 @@ int update_cov(bool shape_only, int nbinsE, int nL){
 	  for(int Ecol = 0; Ecol < nbinsE; Ecol++){
 
 	    M (Erri,Errj) /= NomVec[Lrow][Erow]*NomVec[Lcol][Ecol];
-	    M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
+	    if(sigDm == -1)  M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
+	    else M(Erri, Errj) *= (NULLVec[Lrow][Erow] - (OscVec[Lrow][sigDm][Erow] * getSin22THpt(sigSin22th)))*(NULLVec[Lcol][Ecol] - (OscVec[Lcol][sigDm][Ecol] * getSin22THpt(sigSin22th)));
 	    if(Erri == Errj){ M (Erri, Errj) += NULLVec[Lrow][Erow];}
             Errj++;		
 	  }
@@ -394,6 +545,14 @@ int update_cov(bool shape_only, int nbinsE, int nL){
 }
 
 double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, double signalDm2){
+
+  if(drawScale){
+    double bins[20] = {.200, .300, .400, .450, .500, .550, .600, .650, .700, .750, .800, .850, .900, .950, 1.000, 1.250, 1.500, 2.000, 2.500, 3.000};
+    cvHist = new TH1D("cvHist", "", nbinsE, bins);
+    predHist = new TH1D("predHist","",nbinsE,bins);
+    predScaledHist = new TH1D("predScaleHist","",nbinsE,bins);
+  }
+  int scaleDm2pt = 0, scaleSin22thpt = 0;
 
   // Fill Prediction Matrix
   std::vector< std::vector< TMatrixT <float> > >  Pred;
@@ -418,12 +577,16 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
   for(int dm = 0; dm <= npoints; dm++){
     // Here, we also try to find the closest estimate for our dm2 point within the set of npoints points
     if(getDMpt(dm) <= signalDm2)  mydm2pt = dm;
+    if(drawScale){
+      if(getDMpt(dm) <= predDm2) scaleDm2pt = dm;
+    }
     for(int s = 0; s <= npoints; s++){
       Predi = 0; 
       for(int Lbin = 0; Lbin < nL; Lbin++){
         for(int Ebin = 0; Ebin < nbinsE; Ebin++){
 	  sin22th = getSin22THpt(s);
 	  if(sin22th <= signalSin22th && s > mysinpt)  mysinpt = s;
+	  if(drawScale && sin22th <= predSin22th && s > scaleSin22thpt) scaleSin22thpt = s;
   	  Pred[dm][s] (Predi,0) = NULLVec[Lbin][Ebin] - (OscVec[Lbin][dm][Ebin])*(sin22th);
 	  Predi++;
 	}
@@ -448,10 +611,14 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
 // Calculate Chi2
   fiveSigma = new TGraph();
   threeSigma = new TGraph();
+  ninety = new TGraph();
+  chisqSurf = new TGraph2D();
   Double_t chisq;
 
   int fiveSCounter = 0;
   int threeSCounter = 0;
+  int surfCounter = 0;
+  int ninetyCounter = 0;
   int ncounter = 0;
   double bestFit_sin22th, bestFit_dm2;
 
@@ -487,7 +654,15 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
       TMatrixT <float> PredScaled(nbinsE*nL,1);
 
       for(int i = 0; i < nbinsE*nL; i++){
-        PredScaled(i,0) = Scaling[i]*(Pred[dm2][sint] (i,0));   
+        PredScaled(i,0) = Scaling[i]*(Pred[dm2][sint] (i,0));
+      }
+
+      if(drawScale && scaleDm2pt == dm2 && scaleSin22thpt == sint){
+        for(int eBins = 0; eBins < nbinsE; eBins ++){
+          cvHist->SetBinContent(eBins,(CV (((nL-1)*nbinsE) + eBins, 0)/(cvHist->GetXaxis()->GetBinWidth(eBins+1))));
+          predHist->SetBinContent(eBins,(Pred[scaleDm2pt][scaleSin22thpt] (((nL-1)*nbinsE) + eBins, 0))/(cvHist->GetXaxis()->GetBinWidth(eBins+1)));
+          predScaledHist->SetBinContent(eBins,(PredScaled (((nL-1)*nbinsE) + eBins,0))/(cvHist->GetXaxis()->GetBinWidth(eBins+1)));
+        }
       }
 
       TMatrixT <float> Final(nbinsE*nL,1);
@@ -504,15 +679,25 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
       Fin.Mult(middle,Final);
       chisq = Fin(0,0);
 
-
   // Draw Jellybeans
+      if(chisq <= 1.64){
+	ninety->SetPoint(ninetyCounter,getSin22THpt(sint),getDMpt(dm2));
+	ninetyCounter++;
+      }
       if(chisq <= 9){
         threeSigma->SetPoint(threeSCounter,getSin22THpt(sint),getDMpt(dm2));
         threeSCounter++;
       }
-     if(chisq <= 25) {
+      if(chisq <= 25) {
 	  fiveSigma->SetPoint(fiveSCounter,getSin22THpt(sint),getDMpt(dm2));
 	  fiveSCounter ++;
+      }
+     
+  // Draw Surface
+      if(drawSurf){
+       if(chisq <= 100.) chisqSurf->SetPoint(surfCounter,getSin22THpt(sint),getDMpt(dm2),sqrt(chisq));
+       else chisqSurf->SetPoint(surfCounter,getSin22THpt(sint),getDMpt(dm2),10.);
+       surfCounter ++;
       }
 
   // Now, try to find best fit
