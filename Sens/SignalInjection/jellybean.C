@@ -68,12 +68,12 @@ int multiple_detector_fit(){
 
   std::string mode = "nu";	//beam mode to run in
   bool use100m = true;		//Include the detector at 100m?
-  bool use470m = false;		//Include the detector at 470m?
+  bool use470m = true;		//Include the detector at 470m?
   bool use700m = true;		//Include the detector at 700m?
 
   bool shape_only = true;
 
-  double signal[2] = {.1,10.};	//Injected signal, in form (sin22t,dm2)
+  double signal[2] = {.015,0.5};	//Injected signal, in form (sin22t,dm2)
   bool printJelly = false;
   std::string jellyTitle = "pngs/jellybean_dm2_10_sin22th_01.png";
 
@@ -247,7 +247,7 @@ int multiple_detector_fit(){
   fiveSigma->Draw("p");
   threeSigma->Draw("psame");
   ninety->Draw("psame");
-//  bestFit->Draw("psame");
+  bestFit->Draw("psame");
   signalPt->Draw("psame");
 
   TLatex *tex_Detector = new TLatex(.2,.23,"#splitline{LAr1-ND (100m)}{and T600 (600m, on axis)}");
@@ -613,9 +613,10 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
     for(int Ebin = 0; Ebin < nbinsE; Ebin ++){
       CV_noSmear(Lbin*nbinsE + Ebin,0) = (NULLVec[Lbin][Ebin] - (OscVec[Lbin][mydm2pt][Ebin])*signalSin22th);
       if(smear){
+	std::cout << "... Smearing based on Statistics ..." << std::endl;
 	TRandom3 * r3 = new TRandom3();
 	CV(Lbin*nbinsE + Ebin,0) = r3->Gaus(CV_noSmear(Lbin*nbinsE + Ebin, 0),sqrt(CV_noSmear(Lbin*nbinsE + Ebin,0)));
-	cout << (CV(Lbin*nbinsE + Ebin,0) - CV_noSmear(Lbin*nbinsE + Ebin,0)) << "...";
+	//	cout << (CV(Lbin*nbinsE + Ebin,0) - CV_noSmear(Lbin*nbinsE + Ebin,0)) << "...";
       }
       else{
 	CV(Lbin*nbinsE + Ebin,0) = CV_noSmear(Lbin*nbinsE + Ebin, 0);
