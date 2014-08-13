@@ -43,6 +43,10 @@ TGraph2D * chisqSurf;
 TH1D * cvHist;
 TH1D * predHist;
 TH1D * predScaledHist;
+
+TH1D *smeared;
+TH1D *unsmeared;
+
 double predSin22th;
 double predDm2;
 bool drawSurf;
@@ -58,7 +62,7 @@ Double_t sin22thmin = 0.0001;
 Double_t sin22thmax = 1.0;
 
 int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th);
-double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, double signalDm2, bool smear, bool drawScale);
+double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, double signalDm2, bool smear, bool drawScale, bool drawSmear);
 double getDMpt(int dm);
 double getSin22THpt(int sint);
 
@@ -73,21 +77,25 @@ int multiple_detector_fit(){
 
   bool shape_only = true;
 
-  double signal[2] = {.015,0.5};	//Injected signal, in form (sin22t,dm2)
+  double signal[2] = {.03,1.2};	//Injected signal, in form (sin22t,dm2)
   bool printJelly = false;
   std::string jellyTitle = "pngs/jellybean_dm2_10_sin22th_01.png";
 
   // Chisq Surface(testing)
-  drawSurf = false;
+  drawSurf = true;
   bool printSurf = false;
   std::string surfTitle = "chisqSurf_test.pdf";
 
   // Scale Factor Histogram (will only work with far detector and only really significant with shape-only)
-  bool drawScale = true;
+  bool drawScale = false;
   bool printScale = false;
   std::string scaleTitle = "pngs/evd_scaleDiff.png";
   predSin22th = .05;
   predDm2 = 50.;
+
+  // Smearing Histogram
+  bool drawSmear = true;
+
 
 
   // ---------------------------------------------------------
@@ -196,12 +204,11 @@ int multiple_detector_fit(){
   update_cov(shape_only, nbinsE, nL, -1, -1);
 
 // Calculate chisquared
-  chisq_calc(shape_only,nL,nbinsE,signal[0],signal[1], true, drawScale);
+  chisq_calc(shape_only,nL,nbinsE,signal[0],signal[1], true, drawScale, drawSmear);
 
 // Update covariance matrix, and then do chisquared one more time with updated best fit points
-//  update_cov(shape_only, nbinsE, nL, bestFit->GetY(), bestFit->GetX());
-//  chisq_calc(shape_only,nL,nbinsE,bestFit->GetX(),bestFit->GetY(), false, false);
-
+  update_cov(shape_only, nbinsE, nL, bestFit->GetY(), bestFit->GetX());
+  chisq_calc(shape_only,nL,nbinsE,signal[0],signal[1], false, false, false);
 
 // Begin Drawing
   fiveSigma->SetMarkerSize(5);
@@ -249,6 +256,7 @@ int multiple_detector_fit(){
   ninety->Draw("psame");
   bestFit->Draw("psame");
   signalPt->Draw("psame");
+  c3->RedrawAxis();
 
   TLatex *tex_Detector = new TLatex(.2,.23,"#splitline{LAr1-ND (100m)}{and T600 (600m, on axis)}");
 //  TLatex *tex_Detector = new TLatex(.2,.23,"MicroBooNE (470m)");
@@ -361,6 +369,8 @@ int multiple_detector_fit(){
     }
   }
 
+ 
+
   // Draw Scale Plot
   if(drawScale){
     TCanvas* c5 = new TCanvas("c5","Scale Plot",700,700);
@@ -435,6 +445,55 @@ int multiple_detector_fit(){
     if(printScale){
       c5->Print(scaleTitle.c_str());
     }
+  }
+
+  // Draw Smear Plot
+  if(drawSmear){
+    TCanvas* c6 = new TCanvas("c6","Smear Plot",700,700);
+    c6->SetLeftMargin(.15);
+    c6->SetBottomMargin(.15);
+    c6->SetTopMargin(.05);
+    c6->SetRightMargin(.05);
+    c6->cd();
+
+    /*  smeared->SetFillColor(0);
+    unsmeared->SetTitle(";sin^{2}2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}};#Deltam_{41}^{2} [eV^{2}]");
+    unsmeared->GetXaxis()->SetTitleOffset(1.2);
+    unsmeared->GetYaxis()->SetTitleOffset(1.2);
+    unsmeared->GetXaxis()->SetTitleFont(62);
+    unsmeared->GetYaxis()->SetTitleFont(62);
+    unsmeared->GetYaxis()->CenterTitle();
+    unsmeared->GetXaxis()->CenterTitle();
+    unsmeared->GetXaxis()->SetTitleSize(0.05);
+    unsmeared->GetXaxis()->SetLabelSize(0.04);
+    unsmeared->GetXaxis()->SetLabelOffset(0.001);
+    unsmeared->GetYaxis()->SetTitleSize(0.05);
+    unsmeared->GetYaxis()->SetLabelSize(0.04);
+    unsmeared->SetStats(kFALSE);*/
+
+    TLegend* legS=new TLegend(0.6,0.3,0.85,0.45);
+    legS->SetFillStyle(0);
+    legS->SetFillColor(0);
+    legS->SetBorderSize(0);
+    legS->SetTextFont(62);
+    legS->SetTextSize(0.03);
+    legS->AddEntry(unsmeared,"Unsmeared","h");
+    legS->AddEntry(smeared,"Statistically Smeared","h");
+
+    smeared->SetLineColor(0);
+    smeared->SetFillColor(kBlue-10);
+
+    unsmeared->SetLineWidth(2);
+    unsmeared->SetLineColor(kBlack);
+    unsmeared->SetMarkerColor(kBlack);
+    unsmeared->SetMarkerSize(0.1);
+    unsmeared->SetMarkerStyle(2);
+
+    smeared->Draw("h");
+    unsmeared->Draw("ep same");
+
+    legS->Draw();
+
   }
 
   return 0;
@@ -555,7 +614,7 @@ int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th){
   return 0;
 }
 
-double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, double signalDm2, bool smear, bool drawScale){
+double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, double signalDm2, bool smear, bool drawScale, bool drawSmear){
 
   if(drawScale){
     double bins[20] = {.200, .300, .400, .450, .500, .550, .600, .650, .700, .750, .800, .850, .900, .950, 1.000, 1.250, 1.500, 2.000, 2.500, 3.000};
@@ -563,6 +622,12 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
     predHist = new TH1D("predHist","",nbinsE,bins);
     predScaledHist = new TH1D("predScaleHist","",nbinsE,bins);
   }
+  if(drawSmear){
+    double bins[20] = {.200, .300, .400, .450, .500, .550, .600, .650, .700, .750, .800, .850, .900, .950, 1.000, 1.250, 1.500, 2.000, 2.500, 3.000};
+    smeared = new TH1D("smeared", "", nbinsE, bins);
+    unsmeared = new TH1D("unsmeared","",nbinsE,bins);
+  }
+
   int scaleDm2pt = 0, scaleSin22thpt = 0;
 
   // Fill Prediction Matrix
@@ -613,16 +678,22 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, double signalSin22th, dou
     for(int Ebin = 0; Ebin < nbinsE; Ebin ++){
       CV_noSmear(Lbin*nbinsE + Ebin,0) = (NULLVec[Lbin][Ebin] - (OscVec[Lbin][mydm2pt][Ebin])*signalSin22th);
       if(smear){
-	std::cout << "... Smearing based on Statistics ..." << std::endl;
+	if(Lbin == 0 && Ebin == 0)std::cout << "... Smearing based on Statistics ..." << std::endl;
 	TRandom3 * r3 = new TRandom3();
 	CV(Lbin*nbinsE + Ebin,0) = r3->Gaus(CV_noSmear(Lbin*nbinsE + Ebin, 0),sqrt(CV_noSmear(Lbin*nbinsE + Ebin,0)));
-	//	cout << (CV(Lbin*nbinsE + Ebin,0) - CV_noSmear(Lbin*nbinsE + Ebin,0)) << "...";
+	if(Lbin == 1){
+	  smeared->SetBinContent(Ebin+1,CV(Lbin*nbinsE + Ebin,0));
+	  unsmeared->SetBinContent(Ebin+1,CV_noSmear(Lbin*nbinsE + Ebin, 0));
+
+	}
       }
       else{
 	CV(Lbin*nbinsE + Ebin,0) = CV_noSmear(Lbin*nbinsE + Ebin, 0);
       }
     }
   }
+
+  
 
   signalPt = new TMarker(signalSin22th,signalDm2,7);
   signalPt->SetMarkerColor(kRed);
