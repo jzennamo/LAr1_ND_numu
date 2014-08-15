@@ -29,31 +29,38 @@
 
 std::vector< std::vector <float> >   NULLVec;						// Null hypothesis
 std::vector< std::vector < std::vector <float> > >   OscVec;		// Oscillated hypothesis for each dm2 point
+std::vector< std::vector< TMatrixT <float> > >  Pred;
+
 double NomVec[3][20];
 double SystVec[3][1001][7][20];
+double chisqArray[251001];
+
 TMatrixT <float> cov;
-
-std::vector< std::vector< TMatrixT <float> > >  Pred;
 TMatrixT <float> CV;
-double chisqArray[250500];
 
+// Here is our list of graphs and markers
+TGraph2D * chisqSurf;
 TGraph * fiveSigma;
 TGraph * threeSigma;
 TGraph * ninety;
 TMarker * signalPt;
 TMarker * bestFit;
 
-TGraph2D * chisqSurf;
+// Here is our list of histos
 TH1D * cvHist;
 TH1D * predHist;
 TH1D * predScaledHist;
-
 TH1D *smeared;
 TH1D *unsmeared;
 
-double predSin22th;
-double predDm2;
-bool drawSurf;
+bool use100m, use470m, use700m;
+bool drawSurf, drawSmear, drawScale;
+bool shape_only;
+
+double predSig[2];
+int signalReso[2];
+int bestFitReso[2];
+int predSigReso[2];
 
 //plot properties
 Int_t npoints = 500;			// Grid Pointsl
@@ -61,13 +68,13 @@ Int_t spoints = 1000;			// Universes
 
 //grid boundaries
 Double_t dm2min = 0.01;			//eV**2
-Double_t dm2max = 100.;         //eV**2
+Double_t dm2max = 100.;         	//eV**2
 Double_t sin22thmin = 0.0001;
 Double_t sin22thmax = 1.0;
 
-int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th);
+int update_cov(int nbinsE, int nL, bool useBestFit);
 int build_vectors(int nL, int nbinsE, double signalSin22th, double signalDm2, bool smear);
-double chisq_calc(bool shape_only, int nL, int nbinsE, bool drawScale, bool drawSmear);
+double chisq_calc(int nL, int nbinsE);
 int draw_jellybeans(double chiLow, bool exclude);
 double getDMpt(int dm, bool inverse);
 double getSin22THpt(int sint, bool inverse);
@@ -77,33 +84,26 @@ int multiple_detector_fit(){
   // -----------Declarations and modifiers--------------------
 
   std::string mode = "nu";	//beam mode to run in
-  bool use100m = true;		//Include the detector at 100m?
-  bool use470m = true;		//Include the detector at 470m?
-  bool use700m = true;		//Include the detector at 700m?
+  use100m = true;		//Include the detector at 100m?
+  use470m = true;		//Include the detector at 470m?
+  use700m = true;		//Include the detector at 700m?
 
-  bool shape_only = false;
+  shape_only = true;
   bool smear = true;
   bool exclude = false;
-  
+
   double signal[2] = {.03,1.2};	//Injected signal, in form (sin22t,dm2)
-  bool printJelly = false;
-  std::string jellyTitle = "pngs/jellybean_dm2_10_sin22th_01.png";
 
   // Chisq Surface(testing)
-  drawSurf = true;
-  bool printSurf = false;
-  std::string surfTitle = "chisqSurf_test.pdf";
+  drawSurf = false;
 
   // Scale Factor Histogram (will only work with far detector and only really significant with shape-only)
-  bool drawScale = true;
-  bool printScale = false;
-  std::string scaleTitle = "pngs/evd_scaleDiff.png";
-  predSin22th = .03;
-  predDm2 = 1.2;
+  drawScale = false;
+  predSig[0] = .03;		// Prediction Vector sin22th
+  predSig[1] = 1.2;		// prediction Vector dm2
 
   // Smearing Histogram
-  bool drawSmear = true;
-
+  drawSmear = false;
 
   // ---------------------------------------------------------
 
@@ -163,14 +163,14 @@ int multiple_detector_fit(){
     for(int u = 0; u < spoints; u++){
       for(int s = 0; s < 7; s++){
         TH1D *SYST_BASE;
-    	TString upoint = Form("%d",u);
-    	TString name = "Universe_";
-    	TString name2 = "_MultiSim_";
-    	TString mul = Form("%d",s);
+        TString upoint = Form("%d",u);
+        TString name = "Universe_";
+        TString name2 = "_MultiSim_";
+        TString mul = Form("%d",s);
 
-    	name += upoint;
-    	name += name2;
-    	name += mul;
+        name += upoint;
+        name += name2;
+        name += mul;
 
         SYST_BASE = (TH1D*)(temp_file_syst.Get(name));
         SYST_BASE->Rebin(1);
@@ -178,7 +178,7 @@ int multiple_detector_fit(){
 	  SystVec[i][u][s][k-1] = 1*(SYST_BASE->GetBinContent(k));
 	}
 	delete SYST_BASE;
-      } 
+      }
     }
     delete NULL_BASE;
     temp_file.Close();
@@ -210,29 +210,27 @@ int multiple_detector_fit(){
   build_vectors(nL, nbinsE, signal[0], signal[1], smear);
 
 // Build the covariance matrix
-  chiLow = update_cov(shape_only, nbinsE, nL, -1, -1);
-
-cout << chiLow << "..";
+  update_cov(nbinsE, nL, false);
 
 // Calculate chisquared for the first time.
-  chisq_calc(shape_only,nL,nbinsE, drawScale, drawSmear);
+  chiLow = chisq_calc(nL,nbinsE);
+  std::cout << "... chisq = " << chiLow << "..." << std::endl;
 
+// Iteration
   for(int iter = 0; iter < 10; iter++){
-    update_cov(shape_only, nbinsE, nL, bestFit->GetY(), bestFit->GetX());
-    chi_current = chisq_calc(shape_only,nL,nbinsE, false, false);
-    cout << chi_current << "..";
+    update_cov(nbinsE, nL, true);
+    chi_current = chisq_calc(nL,nbinsE);
+    std::cout << "... chisq = " << chi_current << "..." << std::endl;
     if(abs(chi_current - chiLow) < .2){
       chiLow = chi_current;
       break;
     }
-    else if(iter == 9)	std::cout << "No convergence of best fit. Sorry." << std::endl;
+    else if(iter == 9)	std::cout << "No convergence of best fit in 10 tries. Sorry." << std::endl;
     chiLow = chi_current;
   }
 
 // Then, draw the jellybeans!
- draw_jellybeans(chiLow, exclude);
-
-/*
+  draw_jellybeans(chiLow, exclude);
 
 // Print Chisq Surface!
   if(drawSurf){
@@ -275,12 +273,7 @@ cout << chiLow << "..";
     chisqSurf->SetMarkerColor(kBlue);
     chisqSurf->Draw("P");
 
-    if(printSurf){
-      c4->Print(surfTitle.c_str());
-    }
   }
-*/
- 
 
   // Draw Scale Plot
   if(drawScale){
@@ -328,12 +321,8 @@ cout << chiLow << "..";
     predScaledHist->Draw("phsame");
 
     legS->Draw();
-
-    if(printScale){
-      c5->Print(scaleTitle.c_str());
-    }
   }
-/*
+
   // Draw Smear Plot
   if(drawSmear){
     TCanvas* c6 = new TCanvas("c6","Smear Plot",700,700);
@@ -343,7 +332,19 @@ cout << chiLow << "..";
     c6->SetRightMargin(.05);
     c6->cd();
 
-
+    unsmeared->SetTitle(";Reconstructed Energy [GeV];Events / Bin");
+    unsmeared->GetXaxis()->SetTitleOffset(1.2);
+    unsmeared->GetYaxis()->SetTitleOffset(1.2);
+    unsmeared->GetXaxis()->SetTitleFont(62);
+    unsmeared->GetYaxis()->SetTitleFont(62);
+    unsmeared->GetYaxis()->CenterTitle();
+    unsmeared->GetXaxis()->CenterTitle();
+    unsmeared->GetXaxis()->SetTitleSize(0.05);
+    unsmeared->GetXaxis()->SetLabelSize(0.04);
+    unsmeared->GetXaxis()->SetLabelOffset(0.001);
+    unsmeared->GetYaxis()->SetTitleSize(0.05);
+    unsmeared->GetYaxis()->SetLabelSize(0.04);
+    unsmeared->SetStats(kFALSE);
 
     TLegend* legS=new TLegend(0.6,0.3,0.85,0.45);
     legS->SetFillStyle(0);
@@ -351,29 +352,28 @@ cout << chiLow << "..";
     legS->SetBorderSize(0);
     legS->SetTextFont(62);
     legS->SetTextSize(0.03);
-    legS->AddEntry(unsmeared,"Unsmeared","h");
-    legS->AddEntry(smeared,"Statistically Smeared","h");
+    legS->AddEntry(unsmeared,"Unsmeared","f");
+    legS->AddEntry(smeared,"Statistically Smeared","ep");
 
-    smeared->SetLineColor(0);
-    smeared->SetFillColor(kBlue-10);
+    unsmeared->SetLineColor(0);
+    unsmeared->SetFillColor(kBlue-10);
 
-    unsmeared->SetLineWidth(2);
-    unsmeared->SetLineColor(kBlack);
-    unsmeared->SetMarkerColor(kBlack);
-    unsmeared->SetMarkerSize(0.1);
-    unsmeared->SetMarkerStyle(2);
+    smeared->SetLineWidth(2);
+    smeared->SetLineColor(kBlack);
+    smeared->SetMarkerColor(kBlack);
+    smeared->SetMarkerSize(0.1);
+    smeared->SetMarkerStyle(2);
 
-    smeared->Draw("h");
-    unsmeared->Draw("ep same");
+    unsmeared->Draw("h");
+    smeared->Draw("ep same");
 
     legS->Draw();
   }
-*/
 
   return 0;
 }
 
-int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th){
+int update_cov(int nbinsE, int nL, bool useBestFit){
 
 //Build Matrices and Vectors
   TMatrixT <float> M(nbinsE*nL,nbinsE*nL);
@@ -411,11 +411,11 @@ int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th){
 	    // Build "Fractional" Error Matrix
 	    M (Erri,Errj) /= NomVec[Lrow][Erow]*NomVec[Lcol][Ecol]; 
 	    // Now  take the real statistics to fill the Error Matrix. Here is where we'll update with the best fit point.
-	    if(sigDm == -1)  M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
-	    else M(Erri, Errj) *= (NULLVec[Lrow][Erow] - (OscVec[Lrow][sigDm][Erow] * getSin22THpt(sigSin22th,false)))*(NULLVec[Lcol][Ecol] - (OscVec[Lcol][sigDm][Ecol] * getSin22THpt(sigSin22th,false)));
+	    if(!useBestFit)  M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
+	    else M(Erri, Errj) *= (NULLVec[Lrow][Erow] - (OscVec[Lrow][bestFitReso[1]][Erow] * getSin22THpt(bestFitReso[0],false)))*(NULLVec[Lcol][Ecol] - (OscVec[Lcol][bestFitReso[1]][Ecol] * getSin22THpt(bestFitReso[0],false)));
 	    // Add Stat. Errors
 	    if(Erri == Errj){ 
-	      M (Erri, Errj) += NULLVec[Lrow][Erow];
+	      M (Erri, Errj) += CV(Lrow * nbinsE + Ecol,0);
 	    }
 	  }
 	  n = 0;
@@ -425,8 +425,14 @@ int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th){
       }
 
       // Fill vectors for chi^2 calaculations
-      N(Erri,0) = (NULLVec[Lrow][Erow]);
-      NT += (NULLVec[Lrow][Erow]);
+      if(useBestFit){
+        N(Erri,0) = NULLVec[Lrow][Erow] - (OscVec[Lrow][bestFitReso[1]][Erow] * getSin22THpt(bestFitReso[0],false));
+        NT += NULLVec[Lrow][Erow] - (OscVec[Lrow][bestFitReso[1]][Erow] * getSin22THpt(bestFitReso[0],false));
+      }
+      else{
+        N(Erri,0) = (NULLVec[Lrow][Erow]);
+        NT += (NULLVec[Lrow][Erow]);
+      }
       Erri++;
     }
   }
@@ -434,7 +440,6 @@ int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th){
   // If we want to do a shape only analysis we need to factorize the Error Matrix
   // such that we remove any uncertainty associated with only the normalization (we will leave the mixed components)
   if(shape_only){
-
     TMatrix Mik(nbinsE*nL,1);
     TMatrix Mkj(1,nbinsE*nL);
     double Mkl = 0;
@@ -442,7 +447,6 @@ int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th){
     Mkj.Zero();
     for(int i = 0; i < nbinsE*nL; i++){
       for(int j = 0; j < nbinsE*nL; j++){
-
 	 Mik(i,0) += M(i,j);
 	 Mkj(0,i) += M(j,i);
 	 Mkl += M(i,j);
@@ -466,9 +470,11 @@ int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th){
 	  for(int Ecol = 0; Ecol < nbinsE; Ecol++){
 
 	    M (Erri,Errj) /= NomVec[Lrow][Erow]*NomVec[Lcol][Ecol];
-	    if(sigDm == -1)  M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
-	    else M(Erri, Errj) *= (NULLVec[Lrow][Erow] - (OscVec[Lrow][sigDm][Erow] * getSin22THpt(sigSin22th,false)))*(NULLVec[Lcol][Ecol] - (OscVec[Lcol][sigDm][Ecol] * getSin22THpt(sigSin22th,false)));
-	    if(Erri == Errj){ M (Erri, Errj) += NULLVec[Lrow][Erow];}
+	    if(!useBestFit)  M(Erri, Errj) *= NULLVec[Lrow][Erow]*NULLVec[Lcol][Ecol];		
+	    else M(Erri, Errj) *= (NULLVec[Lrow][Erow] - (OscVec[Lrow][bestFitReso[1]][Erow] * getSin22THpt(bestFitReso[0],false)))*(NULLVec[Lcol][Ecol] - (OscVec[Lcol][bestFitReso[1]][Ecol] * getSin22THpt(bestFitReso[0],false)));
+	    if(Erri == Errj){ 
+	      M (Erri, Errj) += CV(Lrow * nbinsE + Ecol,0);
+	    }
             Errj++;		
 	  }
         }
@@ -488,29 +494,18 @@ int update_cov(bool shape_only, int nbinsE, int nL, int sigDm, int sigSin22th){
   return 0;
 }
 
-double chisq_calc(bool shape_only, int nL, int nbinsE, bool drawScale, bool drawSmear){
+double chisq_calc(int nL, int nbinsE){
 
-  int scaleDm2 = 0, scaleSin22th = 0;
   if(drawScale){
     double bins[20] = {.200, .300, .400, .450, .500, .550, .600, .650, .700, .750, .800, .850, .900, .950, 1.000, 1.250, 1.500, 2.000, 2.500, 3.000};
     cvHist = new TH1D("cvHist", "", nbinsE, bins);
     predHist = new TH1D("predHist","",nbinsE,bins);
     predScaledHist = new TH1D("predScaleHist","",nbinsE,bins);
-    for(int d = 0; d <= npoints; d++){
-      if(getDMpt(d, false) < predDm2)	scaleDm2 = d;
-      for(int s = 0; s <= npoints; s++){
-        if(getSin22THpt(s, false) < predSin22th && s > predSin22th) scaleSin22th = s;
-      }
-    }
   }
-  if(drawSmear){
-    double bins[20] = {.200, .300, .400, .450, .500, .550, .600, .650, .700, .750, .800, .850, .900, .950, 1.000, 1.250, 1.500, 2.000, 2.500, 3.000};
-    smeared = new TH1D("smeared", "", nbinsE, bins);
-    unsmeared = new TH1D("unsmeared","",nbinsE,bins);
-  } 
 
 // Now, calculate chisq
   chisqSurf = new TGraph2D();
+  int chisqSurf_counter = 0;
   Double_t chisq;
   double chiLow = -1;
   double bestFit_sin22th, bestFit_dm2;
@@ -521,7 +516,7 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, bool drawScale, bool draw
       double Scaling[nbinsE*nL];
 
       if(shape_only){
-        //Scale all measurements to the ND NULL levels             
+        //Scale all measurements to the ND NULL levels
         for(int Edecbin = 0; Edecbin < nbinsE; Edecbin++){
 	  Scaling[Edecbin]  = CV (Edecbin,0);
 	  if(Pred[dm2][sint] (Edecbin,0) != 0){Scaling[Edecbin] /= Pred[dm2][sint] (Edecbin,0);}
@@ -549,10 +544,10 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, bool drawScale, bool draw
         PredScaled(i,0) = Scaling[i]*(Pred[dm2][sint] (i,0));
       }
 
-      if(drawScale && scaleDm2 == dm2 && scaleSin22th == sint){
+      if(drawScale && dm2 == predSigReso[1] && sint == predSigReso[0]){
         for(int eBins = 0; eBins < nbinsE; eBins ++){
           cvHist->SetBinContent(eBins,(CV (((nL-1)*nbinsE) + eBins, 0)/(cvHist->GetXaxis()->GetBinWidth(eBins+1))));
-          predHist->SetBinContent(eBins,(Pred[scaleDm2][scaleSin22th] (((nL-1)*nbinsE) + eBins, 0))/(cvHist->GetXaxis()->GetBinWidth(eBins+1)));
+          predHist->SetBinContent(eBins,(Pred[dm2][sint] (((nL-1)*nbinsE) + eBins, 0))/(cvHist->GetXaxis()->GetBinWidth(eBins+1)));
           predScaledHist->SetBinContent(eBins,(PredScaled (((nL-1)*nbinsE) + eBins,0))/(cvHist->GetXaxis()->GetBinWidth(eBins+1)));
         }
       }
@@ -571,21 +566,26 @@ double chisq_calc(bool shape_only, int nL, int nbinsE, bool drawScale, bool draw
       Fin.Mult(middle,Final);
       chisq = Fin(0,0);
 
-      chisqArray[dm2*npoints+sint] = chisq;
-     // if(chisq <= 100.) chisqSurf->SetPoint(dm2*npoints + sint,getSin22THpt(sint,false),getDMpt(dm2,false),sqrt(chisq));
-     // else chisqSurf->SetPoint(dm2*npoints + sint,getSin22THpt(sint,false),getDMpt(dm2,false),10.);
+      chisqArray[dm2*(npoints+1)+sint] = chisq;
 
-  // Now, try to find best fit
+      if(chisq <= 100.) chisqSurf->SetPoint(chisqSurf_counter,getSin22THpt(sint,false),getDMpt(dm2,false),sqrt(chisq));
+      else chisqSurf->SetPoint(chisqSurf_counter,getSin22THpt(sint,false),getDMpt(dm2,false),10.);
+      chisqSurf_counter++;
+
+      // Now, try to find best fit
       if(chiLow < 0) chiLow = chisq;
       if(chisq < chiLow){
         chiLow = chisq;
         bestFit_sin22th = getSin22THpt(sint,false);
+	bestFitReso[0] = sint;
         bestFit_dm2 = getDMpt(dm2,false);
+	bestFitReso[1] = dm2;
       }
     }
   }
 
   bestFit = new TMarker(bestFit_sin22th,bestFit_dm2, 3);
+
   std::cout << "Calculated Chisq Points" << std::endl;
   return chiLow;
 }
@@ -603,7 +603,7 @@ int draw_jellybeans(double chiLow, bool exclude){
 
   for(int dm2 = 0; dm2 < npoints; dm2 ++){
     for(int sint = 0; sint < npoints; sint ++){
-      chisq = chisqArray[dm2 * npoints + sint];
+      chisq = chisqArray[dm2 * (npoints + 1) + sint];
 
       if(chisq <= 1.64 + chiLow){
 	ninety->SetPoint(ninetyCounter,getSin22THpt(sint,false),getDMpt(dm2,false));
@@ -634,8 +634,8 @@ int draw_jellybeans(double chiLow, bool exclude){
 
 // Begin Drawing
   fiveSigma->SetMarkerColor(kBlue);	fiveSigma->SetFillColor(kBlue);			fiveSigma->SetMarkerStyle(7);
-  threeSigma->SetMarkerStyle(7);	threeSigma->SetMarkerColor(kGreen + 1);	threeSigma->SetFillColor(kGreen + 1);
-  ninety->SetMarkerColor(kYellow);  ninety->SetFillColor(kYellow);			ninety->SetMarkerStyle(7);
+  threeSigma->SetMarkerStyle(7);	threeSigma->SetMarkerColor(kGreen + 1);		threeSigma->SetFillColor(kGreen + 1);
+  ninety->SetMarkerColor(kYellow);  	ninety->SetFillColor(kYellow);			ninety->SetMarkerStyle(7);
 
   printf("\nDrawing best fits...\n");
 	
@@ -665,15 +665,21 @@ int draw_jellybeans(double chiLow, bool exclude){
   hr1->SetStats(kFALSE);
   hr1->Draw();
 
-  if(!exclude || (exclude && fiveExcludeE + fiveExcludeN + fiveExcludeW + fiveExcludeS < 3))	fiveSigma->Draw("p");
+  if(!exclude || (exclude && fiveExcludeE + fiveExcludeN + fiveExcludeW + fiveExcludeS < 3))		fiveSigma->Draw("p");
   if(!exclude || (exclude && threeExcludeE + threeExcludeN + threeExcludeW + threeExcludeS < 3))	threeSigma->Draw("psame");
   ninety->Draw("psame");
   bestFit->Draw("psame");
   signalPt->Draw("psame");
   c3->RedrawAxis();
 
-  TLatex *tex_Detector = new TLatex(.2,.23,"#splitline{LAr1-ND (100m)}{and T600 (600m, on axis)}");
-//  TLatex *tex_Detector = new TLatex(.2,.23,"MicroBooNE (470m)");
+  std::string det_str = "#splitline{";
+  if(use100m) det_str += "LAr1-ND (100m)}{";	else det_str += "}{";
+  if(use470m && !use700m) det_str += "and #muBooNE (470m)}";
+  else if(use470m && use700m) det_str += "#muBooNE (470) and T600 (600m, on axis)}";
+  else if(!use470m && use700m) det_str += "and T600 (600m, on axis)}";
+  else det_str += "}";
+
+  TLatex *tex_Detector = new TLatex(.2,.23,det_str.c_str());
   tex_Detector->SetNDC();
   tex_Detector->SetTextFont(62);
   tex_Detector->SetTextSize(0.035);
@@ -686,40 +692,38 @@ int draw_jellybeans(double chiLow, bool exclude){
   tex_pre->SetTextSize(0.03);
   tex_pre->Draw();
 
-/*
-  std::string str_signal;
-  if(shape_only) str_signal = "Shape Only";
-  else str_signal = "Shape + Rate";
-  TLatex *tex_Signal = new TLatex(.18,.92,str_signal.c_str());
-  tex_Signal->SetNDC();
-  tex_Signal->SetTextFont(62);
-  tex_Signal->SetTextSize(0.025);
-  tex_Signal->Draw();
-*/
-
-  TLatex *tex_mode = new TLatex(.18,.89,"#nu mode, CC Events");
+  TLatex *tex_mode = new TLatex(.18,.92,"#nu mode, CC Events");
   tex_mode->SetNDC();
   tex_mode->SetTextFont(62);
   tex_mode->SetTextSize(0.025);
   tex_mode->Draw();
 
-  TLatex *tex_un = new TLatex(.18,.86,"Statistical Uncertainty Only");
+  TLatex *tex_un = new TLatex(.18,.89,"Statistical and Flux Uncertainty");
   tex_un->SetNDC();
   tex_un->SetTextFont(62);
   tex_un->SetTextSize(0.025);
   tex_un->Draw();
 
-  TLatex *tex_E = new TLatex(.18,.83,"Reconstructed Energy");
+  TLatex *tex_E = new TLatex(.18,.86,"Reconstructed Energy");
   tex_E->SetNDC();
   tex_E->SetTextFont(62);
   tex_E->SetTextSize(0.025);
   tex_E->Draw();
 
-  TLatex *tex_eff = new TLatex(.18,.80,"80% #nu#lower[0.4]{#mu} Efficiency");
+  TLatex *tex_eff = new TLatex(.18,.83,"80% #nu#lower[0.4]{#mu} Efficiency");
   tex_eff->SetNDC();
   tex_eff->SetTextFont(62);
   tex_eff->SetTextSize(0.025);
   tex_eff->Draw();
+
+  std::string str_signal;
+  if(shape_only) str_signal = "Shape Only";
+  else str_signal = "Shape + Rate";
+  TLatex *tex_Signal = new TLatex(.18,.80,str_signal.c_str());
+  tex_Signal->SetNDC();
+  tex_Signal->SetTextFont(62);
+  tex_Signal->SetTextSize(0.025);
+  tex_Signal->Draw();
 
   TLegend* legt=new TLegend(0.2,0.3,0.6,0.45);
   legt->SetFillStyle(0);
@@ -727,8 +731,8 @@ int draw_jellybeans(double chiLow, bool exclude){
   legt->SetBorderSize(0);
   legt->SetTextFont(62);
   legt->SetTextSize(0.03);
-  legt->AddEntry(fiveSigma,"5 #sigma Confidence","f");
-  legt->AddEntry(threeSigma,"3 #sigma Confidence","f");
+  if(!exclude || (exclude && fiveExcludeE + fiveExcludeN + fiveExcludeW + fiveExcludeS < 3))		legt->AddEntry(fiveSigma,"5 #sigma Confidence","f");
+  if(!exclude || (exclude && threeExcludeE + threeExcludeN + threeExcludeW + threeExcludeS < 3))	legt->AddEntry(threeSigma,"3 #sigma Confidence","f");
   legt->AddEntry(ninety,"90% Confidence","f");
   legt->AddEntry(signalPt,"Signal","p");
   legt->Draw();
@@ -737,8 +741,12 @@ int draw_jellybeans(double chiLow, bool exclude){
 }
 
 int build_vectors(int nL, int nbinsE, double signalSin22th, double signalDm2, bool smear){
- 
-bool drawSmear = false;
+
+  if(drawSmear){
+    double bins[20] = {.200, .300, .400, .450, .500, .550, .600, .650, .700, .750, .800, .850, .900, .950, 1.000, 1.250, 1.500, 2.000, 2.500, 3.000};
+    smeared = new TH1D("smeared", "", nbinsE, bins);
+    unsmeared = new TH1D("unsmeared","",nbinsE,bins);
+  }
 
   Pred.resize(npoints+1);
   for(int i = 0; i < npoints+1; i++){
@@ -751,11 +759,16 @@ bool drawSmear = false;
   int Predi = 0;
   std::cout << "Filling Prediction Matrices..." << std::endl;
 
-  int tempDm2 = 0, tempSin22th = 0;
+  signalReso[0] = 0;	signalReso[1] = 0;
+  if(drawScale){
+    predSigReso[0] = 0;	predSigReso[1] = 0;
+  }
   for(int dm = 0; dm <= npoints; dm++){
-    if(getDMpt(dm, false) < signalDm2)	tempDm2 = dm;
+    if(getDMpt(dm, false) <= signalDm2)	signalReso[1] = dm;
+    if(drawScale && getDMpt(dm,false) <= predSig[1]) predSigReso[1] = dm;
     for(int s = 0; s <= npoints; s++){
-      if(getSin22THpt(s,false) < signalSin22th && s > tempSin22th) tempSin22th = s;	
+      if(getSin22THpt(s,false) <= signalSin22th && s > signalReso[0]) signalReso[0] = s;
+      if(drawScale && (getSin22THpt(s,false) <= predSig[0] && s > predSigReso[0]))  predSigReso[0] = s;	
       Predi = 0; 
       for(int Lbin = 0; Lbin < nL; Lbin++){
         for(int Ebin = 0; Ebin < nbinsE; Ebin++){
@@ -766,15 +779,14 @@ bool drawSmear = false;
     }
   }
 
-  signalPt = new TMarker(getSin22THpt(tempSin22th,false),getDMpt(tempDm2,false),7);
-  cout << double(getDMpt(tempDm2,false)) << "..." << getSin22THpt(tempSin22th,false);
+  signalPt = new TMarker(getSin22THpt(signalReso[0],false),getDMpt(signalReso[1],false),7);
   signalPt->SetMarkerColor(kRed);
 
   CV.ResizeTo(nbinsE*nL,1);	CV.Zero();
   TMatrixT <float> CV_noSmear(nbinsE*nL,1);
   for(int Lbin = 0; Lbin < nL; Lbin ++){
     for(int Ebin = 0; Ebin < nbinsE; Ebin ++){
-      CV_noSmear(Lbin*nbinsE + Ebin,0) = (NULLVec[Lbin][Ebin] - (OscVec[Lbin][tempDm2][Ebin])*signalPt->GetX());
+      CV_noSmear(Lbin*nbinsE + Ebin,0) = (NULLVec[Lbin][Ebin] - (OscVec[Lbin][signalReso[1]][Ebin])*signalPt->GetX());
       if(smear){
         if(Lbin == 0 && Ebin == 0)std::cout << "... Smearing based on Statistics ..." << std::endl;
 
@@ -782,8 +794,9 @@ bool drawSmear = false;
 	CV(Lbin*nbinsE + Ebin,0) = r3->Gaus(CV_noSmear(Lbin*nbinsE + Ebin, 0),sqrt(CV_noSmear(Lbin*nbinsE + Ebin,0)));
 
         if(Lbin == 1 && drawSmear){
-	  smeared->SetBinContent(Ebin+1,CV(Lbin*nbinsE + Ebin,0));
-	  unsmeared->SetBinContent(Ebin+1,CV_noSmear(Lbin*nbinsE + Ebin, 0));
+	  smeared->SetBinContent(Ebin+1,CV(Lbin*nbinsE + Ebin,0)/(smeared->GetXaxis()->GetBinWidth(Ebin+1)));
+	  smeared->SetBinError(Ebin+1,sqrt(CV(Lbin*nbinsE + Ebin,0))/(smeared->GetXaxis()->GetBinWidth(Ebin+1)));
+	  unsmeared->SetBinContent(Ebin+1,CV_noSmear(Lbin*nbinsE + Ebin, 0)/(smeared->GetXaxis()->GetBinWidth(Ebin+1)));
 	}
       }
       else {
