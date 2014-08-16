@@ -103,7 +103,7 @@ int multiple_detector_fit(){
   predSig[1] = 1.2;		// prediction Vector dm2
 
   // Smearing Histogram
-  drawSmear = false;
+  drawSmear = true;
 
   // ---------------------------------------------------------
 
@@ -221,7 +221,7 @@ int multiple_detector_fit(){
     update_cov(nbinsE, nL, true);
     chi_current = chisq_calc(nL,nbinsE);
     std::cout << "... chisq = " << chi_current << "..." << std::endl;
-    if(abs(chi_current - chiLow) < .2){
+    if(abs(chi_current - chiLow) < .002){
       chiLow = chi_current;
       break;
     }
@@ -792,7 +792,8 @@ int build_vectors(int nL, int nbinsE, double signalSin22th, double signalDm2, bo
         if(Lbin == 0 && Ebin == 0)std::cout << "... Smearing based on Statistics ..." << std::endl;
 
 	TRandom3 * r3 = new TRandom3(0);
-	CV(Lbin*nbinsE + Ebin,0) = r3->Gaus(CV_noSmear(Lbin*nbinsE + Ebin, 0),sqrt(CV_noSmear(Lbin*nbinsE + Ebin,0)));
+	CV(Lbin*nbinsE + Ebin,0) = r3->Poisson(CV_noSmear(Lbin*nbinsE + Ebin, 0)); 
+	  //r3->Gaus(CV_noSmear(Lbin*nbinsE + Ebin, 0),sqrt(CV_noSmear(Lbin*nbinsE + Ebin,0)));
 
         if(Lbin == 1 && drawSmear){
 	  smeared->SetBinContent(Ebin+1,CV(Lbin*nbinsE + Ebin,0)/(smeared->GetXaxis()->GetBinWidth(Ebin+1)));
