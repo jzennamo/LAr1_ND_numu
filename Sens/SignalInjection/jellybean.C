@@ -61,6 +61,7 @@ double predSig[2];
 int signalReso[2];
 int bestFitReso[2];
 int predSigReso[2];
+double POT_weight[3];
 
 //plot properties
 Int_t npoints = 500;			// Grid Pointsl
@@ -84,9 +85,14 @@ int multiple_detector_fit(){
   // -----------Declarations and modifiers--------------------
 
   std::string mode = "nu";	//beam mode to run in
-  use100m = true;		//Include the detector at 100m?
+  use100m = false;		//Include the detector at 100m?
   use470m = true;		//Include the detector at 470m?
-  use700m = true;		//Include the detector at 700m?
+  use700m = false;		//Include the detector at 700m?
+
+  if( use100m &&  use470m && !use700m){POT_weight[0] = 0.23895; POT_weight[1] = 1.23895; POT_weight[2] = 0;}
+  if( use100m && !use470m &&  use700m){POT_weight[0] = 1;       POT_weight[1] = 0;       POT_weight[2] = 1;}
+  if( use100m &&  use470m &&  use700m){POT_weight[0] = 1;       POT_weight[1] = 2;       POT_weight[2] = 1;}
+  if(!use100m &&  use470m && !use700m){POT_weight[0] = 0;       POT_weight[1] = 1;       POT_weight[2] = 0;}
 
   shape_only = false;
   bool smear = true;
@@ -143,8 +149,8 @@ int multiple_detector_fit(){
     nbinsE = NULL_BASE->GetNbinsX();
 
     for(int j = 1; j <= nbinsE; j++){
-      NULLVec[i].push_back(1*(NULL_BASE->GetBinContent(j)));
-      NomVec[i][j-1] = 1*(Nom_base->GetBinContent(j));
+      NULLVec[i].push_back(POT_weight[i]*(NULL_BASE->GetBinContent(j)));
+      NomVec[i][j-1] = POT_weight[i]*(Nom_base->GetBinContent(j));
     }
 
     for(int dm = 0; dm <= npoints; dm++){
@@ -155,7 +161,7 @@ int multiple_detector_fit(){
       OSC_BASE = (TH1D*)(temp_file.Get(name.c_str()));
       OSC_BASE->Rebin(1);
       for(int j = 1; j <= nbinsE; j++){
-        OscVec[i][dm].push_back(1*(OSC_BASE->GetBinContent(j)));
+        OscVec[i][dm].push_back(POT_weight[i]*(OSC_BASE->GetBinContent(j)));
       }
       delete OSC_BASE;
     }
@@ -175,7 +181,7 @@ int multiple_detector_fit(){
         SYST_BASE = (TH1D*)(temp_file_syst.Get(name));
         SYST_BASE->Rebin(1);
 	for(int k = 1; k <= nbinsE; k++){
-	  SystVec[i][u][s][k-1] = 1*(SYST_BASE->GetBinContent(k));
+	  SystVec[i][u][s][k-1] = POT_weight[i]*(SYST_BASE->GetBinContent(k));
 	}
 	delete SYST_BASE;
       }
@@ -674,11 +680,14 @@ int draw_jellybeans(double chiLow, bool exclude){
   c3->RedrawAxis();
 
   std::string det_str = "#splitline{";
-  if(use100m) det_str += "LAr1-ND (100m)}{";	else det_str += "}{";
-  if(use470m && !use700m) det_str += "and MicroBooNE (470m)}";
-  else if(use470m && use700m) det_str += "MicroBooNE (470m) and T600 (600m)}";
-  else if(!use470m && use700m) det_str += "and T600 (600m)}";
+  if(use100m && !use700m) det_str += "LAr1-ND (1.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}{";    
+  else if(use100m && use700m) det_str +=  "LAr1-ND (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}{";    
+  else det_str += "}{";                                          
+  if(use470m && !use700m) det_str += "and MicroBooNE (8.2 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
+  else if(use470m && use700m) det_str += "MicroBooNE (1.3 #times 10#lower[-0.5]{#scale[0.75]{21}} POT) and T600 (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
+  else if(!use470m && use700m) det_str += "and T600 (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
   else det_str += "}";
+
 
   TLatex *tex_Detector = new TLatex(.2,.23,det_str.c_str());
   tex_Detector->SetNDC();
