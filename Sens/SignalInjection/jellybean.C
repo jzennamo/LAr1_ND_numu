@@ -88,14 +88,14 @@ int multiple_detector_fit(){
   use470m = true;		//Include the detector at 470m?
   use700m = true;		//Include the detector at 700m?
 
-  shape_only = true;
+  shape_only = false;
   bool smear = true;
-  bool exclude = false;
+  bool exclude = true;
 
-  double signal[2] = {.03,1.2};	//Injected signal, in form (sin22t,dm2)
+  double signal[2] = {.045,0.5};	//Injected signal, in form (sin22t,dm2)
 
   // Chisq Surface(testing)
-  drawSurf = false;
+  drawSurf = true;
 
   // Scale Factor Histogram (will only work with far detector and only really significant with shape-only)
   drawScale = false;
@@ -314,6 +314,7 @@ int multiple_detector_fit(){
     predHist->SetLineColor(kRed-3);
     predHist->SetFillColor(kRed-10);
     predHist->SetMarkerStyle(20);
+
     predScaledHist->SetMarkerStyle(3);
 
     predHist->Draw("h");
@@ -674,18 +675,18 @@ int draw_jellybeans(double chiLow, bool exclude){
 
   std::string det_str = "#splitline{";
   if(use100m) det_str += "LAr1-ND (100m)}{";	else det_str += "}{";
-  if(use470m && !use700m) det_str += "and #muBooNE (470m)}";
-  else if(use470m && use700m) det_str += "#muBooNE (470) and T600 (600m, on axis)}";
-  else if(!use470m && use700m) det_str += "and T600 (600m, on axis)}";
+  if(use470m && !use700m) det_str += "and MicroBooNE (470m)}";
+  else if(use470m && use700m) det_str += "MicroBooNE (470m) and T600 (600m)}";
+  else if(!use470m && use700m) det_str += "and T600 (600m)}";
   else det_str += "}";
 
   TLatex *tex_Detector = new TLatex(.2,.23,det_str.c_str());
   tex_Detector->SetNDC();
   tex_Detector->SetTextFont(62);
-  tex_Detector->SetTextSize(0.035);
+  tex_Detector->SetTextSize(0.025);
   tex_Detector->Draw(); 
- 
-  TLatex *tex_pre = new TLatex(.18,.75,"PRELIMINARY");
+
+  TLatex *tex_pre = new TLatex(.18,.74,"PRELIMINARY");
   tex_pre->SetNDC();
   tex_pre->SetTextFont(62);
   tex_pre->SetTextColor(kRed-3);
@@ -717,9 +718,9 @@ int draw_jellybeans(double chiLow, bool exclude){
   tex_eff->Draw();
 
   std::string str_signal;
-  if(shape_only) str_signal = "Shape Only";
-  else str_signal = "Shape + Rate";
-  TLatex *tex_Signal = new TLatex(.18,.80,str_signal.c_str());
+  if(shape_only) str_signal = "Shape Only Analysis";
+  else str_signal = "Shape and Rate Analysis";
+  TLatex *tex_Signal = new TLatex(.18,.785,str_signal.c_str());
   tex_Signal->SetNDC();
   tex_Signal->SetTextFont(62);
   tex_Signal->SetTextSize(0.025);
@@ -731,10 +732,10 @@ int draw_jellybeans(double chiLow, bool exclude){
   legt->SetBorderSize(0);
   legt->SetTextFont(62);
   legt->SetTextSize(0.03);
-  if(!exclude || (exclude && fiveExcludeE + fiveExcludeN + fiveExcludeW + fiveExcludeS < 3))		legt->AddEntry(fiveSigma,"5 #sigma Confidence","f");
-  if(!exclude || (exclude && threeExcludeE + threeExcludeN + threeExcludeW + threeExcludeS < 3))	legt->AddEntry(threeSigma,"3 #sigma Confidence","f");
+  if(!exclude || (exclude && fiveExcludeE + fiveExcludeN + fiveExcludeW + fiveExcludeS < 3))		legt->AddEntry(fiveSigma,"5#sigma Confidence","f");
+  if(!exclude || (exclude && threeExcludeE + threeExcludeN + threeExcludeW + threeExcludeS < 3))	legt->AddEntry(threeSigma,"3#sigma Confidence","f");
   legt->AddEntry(ninety,"90% Confidence","f");
-  legt->AddEntry(signalPt,"Signal","p");
+  legt->AddEntry(signalPt,"Signal","fp");
   legt->Draw();
 
   return 0; 
@@ -780,7 +781,7 @@ int build_vectors(int nL, int nbinsE, double signalSin22th, double signalDm2, bo
   }
 
   signalPt = new TMarker(getSin22THpt(signalReso[0],false),getDMpt(signalReso[1],false),7);
-  signalPt->SetMarkerColor(kRed);
+  signalPt->SetMarkerColor(kRed-3);
 
   CV.ResizeTo(nbinsE*nL,1);	CV.Zero();
   TMatrixT <float> CV_noSmear(nbinsE*nL,1);
