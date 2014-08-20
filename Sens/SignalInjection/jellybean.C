@@ -89,19 +89,14 @@ int multiple_detector_fit(){
   use470m = true;		//Include the detector at 470m?
   use700m = false;		//Include the detector at 700m?
 
-  if( use100m &&  use470m && !use700m){POT_weight[0] = 0.23895; POT_weight[1] = 1.23895; POT_weight[2] = 0;}
-  if( use100m && !use470m &&  use700m){POT_weight[0] = 1;       POT_weight[1] = 0;       POT_weight[2] = 1;}
-  if( use100m &&  use470m &&  use700m){POT_weight[0] = 1;       POT_weight[1] = 2;       POT_weight[2] = 1;}
-  if(!use100m &&  use470m && !use700m){POT_weight[0] = 0;       POT_weight[1] = 1;       POT_weight[2] = 0;}
-
   shape_only = false;
   bool smear = true;
   bool exclude = true;
 
-  double signal[2] = {.045,0.5};	//Injected signal, in form (sin22t,dm2)
+  double signal[2] = {.1,0.5};	//Injected signal, in form (sin22t,dm2)
 
   // Chisq Surface(testing)
-  drawSurf = true;
+  drawSurf = false;
 
   // Scale Factor Histogram (will only work with far detector and only really significant with shape-only)
   drawScale = false;
@@ -109,7 +104,7 @@ int multiple_detector_fit(){
   predSig[1] = 1.2;		// prediction Vector dm2
 
   // Smearing Histogram
-  drawSmear = true;
+  drawSmear = false;
 
   // ---------------------------------------------------------
 
@@ -123,6 +118,11 @@ int multiple_detector_fit(){
     std::cout << "\nNo baselines selected!  What did you expect? Exiting.\n" << std::endl;
     return 2;
   }
+
+  if( use100m &&  use470m && !use700m){POT_weight[0] = 0.23895; POT_weight[1] = 1.23895;}
+  if( use100m && !use470m &&  use700m){POT_weight[0] = 1; POT_weight[1] = 1;}
+  if( use100m &&  use470m &&  use700m){POT_weight[0] = 1;       POT_weight[1] = 2;       POT_weight[2] = 1;}
+  if(!use100m &&  use470m && !use700m){POT_weight[0] = 1;}
 
   NULLVec.resize(nL);
   OscVec.resize(nL);
@@ -683,9 +683,10 @@ int draw_jellybeans(double chiLow, bool exclude){
   if(use100m && !use700m) det_str += "LAr1-ND (1.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}{";    
   else if(use100m && use700m) det_str +=  "LAr1-ND (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}{";    
   else det_str += "}{";                                          
-  if(use470m && !use700m) det_str += "and MicroBooNE (8.2 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
+  if(use470m && !use700m && use100m) det_str += "and MicroBooNE (8.2 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
   else if(use470m && use700m) det_str += "MicroBooNE (1.3 #times 10#lower[-0.5]{#scale[0.75]{21}} POT) and T600 (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
   else if(!use470m && use700m) det_str += "and T600 (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
+  else if(use470m && !use700m && !use100m) det_str += "MicroBooNE (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
   else det_str += "}";
 
 
