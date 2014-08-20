@@ -52,6 +52,8 @@ TH1D * predHist;
 TH1D * predScaledHist;
 TH1D *smeared;
 TH1D *unsmeared;
+TH1D *bestfit;
+
 
 bool use100m, use470m, use700m;
 bool drawSurf, drawSmear, drawScale;
@@ -85,15 +87,15 @@ int multiple_detector_fit(){
   // -----------Declarations and modifiers--------------------
 
   std::string mode = "nu";	//beam mode to run in
-  use100m = false;		//Include the detector at 100m?
+  use100m = true;		//Include the detector at 100m?
   use470m = true;		//Include the detector at 470m?
   use700m = false;		//Include the detector at 700m?
 
-  shape_only = false;
+  shape_only = true;
   bool smear = true;
   bool exclude = true;
 
-  double signal[2] = {.1,0.5};	//Injected signal, in form (sin22t,dm2)
+  double signal[2] = {.015,0.5};	//Injected signal, in form (sin22t,dm2)
 
   // Chisq Surface(testing)
   drawSurf = false;
@@ -104,7 +106,7 @@ int multiple_detector_fit(){
   predSig[1] = 1.2;		// prediction Vector dm2
 
   // Smearing Histogram
-  drawSmear = false;
+  drawSmear = true;
 
   // ---------------------------------------------------------
 
@@ -352,15 +354,18 @@ int multiple_detector_fit(){
     unsmeared->GetYaxis()->SetTitleSize(0.05);
     unsmeared->GetYaxis()->SetLabelSize(0.04);
     unsmeared->SetStats(kFALSE);
+    TGaxis::SetMaxDigits(3);
 
-    TLegend* legS=new TLegend(0.6,0.3,0.85,0.45);
+    TLegend* legS=new TLegend(0.475,0.82,0.8,0.94);
     legS->SetFillStyle(0);
     legS->SetFillColor(0);
     legS->SetBorderSize(0);
     legS->SetTextFont(62);
-    legS->SetTextSize(0.03);
-    legS->AddEntry(unsmeared,"Unsmeared","f");
-    legS->AddEntry(smeared,"Statistically Smeared","ep");
+    legS->SetTextSize(0.02);
+    legS->AddEntry(unsmeared,TString::Format("Unsmeared Signal : (%4.2f eV^{2}, %0.3f)",signal[1],signal[0]),"f");
+    legS->AddEntry(smeared,TString::Format("Smeared Signal : (%4.2f eV^{2}, %0.3f)",signal[1],signal[0]),"fep");//"Smeared Signal","fep");
+    legS->AddEntry(bestfit,TString::Format("#chi#lower[-0.3]{2} Best Fit : (%4.2f eV^{2}, %0.3f)",getDMpt(bestFitReso[1],false),getSin22THpt(bestFitReso[0],false)),"fep");
+    //TString::Format("100*((%f)*pow(TMath::Sin((1.267)*(%f)*(.001*x/%f)),2))",sin2,m2,energy)
 
     unsmeared->SetLineColor(0);
     unsmeared->SetFillColor(kBlue-10);
@@ -368,11 +373,18 @@ int multiple_detector_fit(){
     smeared->SetLineWidth(2);
     smeared->SetLineColor(kBlack);
     smeared->SetMarkerColor(kBlack);
-    smeared->SetMarkerSize(0.1);
-    smeared->SetMarkerStyle(2);
+    smeared->SetMarkerSize(0.5);
+    smeared->SetMarkerStyle(kOpenCircle);
+
+    bestfit->SetLineWidth(2);
+    bestfit->SetLineColor(kRed);
+    bestfit->SetMarkerColor(kRed);
+    bestfit->SetMarkerSize(0.5);
+    bestfit->SetMarkerStyle(kOpenCircle);
 
     unsmeared->Draw("h");
     smeared->Draw("ep same");
+    bestfit->Draw("p same");
 
     legS->Draw();
   }
@@ -440,6 +452,13 @@ int update_cov(int nbinsE, int nL, bool useBestFit){
         N(Erri,0) = (NULLVec[Lrow][Erow]);
         NT += (NULLVec[Lrow][Erow]);
       }
+
+      if(drawSmear){
+	if(Lrow == 1){
+	  bestfit->SetBinContent(Erow+1,(NULLVec[Lrow][Erow] - (OscVec[Lrow][bestFitReso[1]][Erow] * getSin22THpt(bestFitReso[0],false)))/(bestfit->GetXaxis()->GetBinWidth(Erow+1)));
+	}
+      }
+
       Erri++;
     }
   }
@@ -483,12 +502,16 @@ int update_cov(int nbinsE, int nL, bool useBestFit){
 	      M (Erri, Errj) += CV(Lrow * nbinsE + Ecol,0);
 	    }
             Errj++;		
+
 	  }
         }
+
+
         Erri++;
       }
     }
   }
+
 
   std::cout << "...Error Matrix Filled" << std::endl;
 
@@ -757,6 +780,7 @@ int build_vectors(int nL, int nbinsE, double signalSin22th, double signalDm2, bo
     double bins[20] = {.200, .300, .400, .450, .500, .550, .600, .650, .700, .750, .800, .850, .900, .950, 1.000, 1.250, 1.500, 2.000, 2.500, 3.000};
     smeared = new TH1D("smeared", "", nbinsE, bins);
     unsmeared = new TH1D("unsmeared","",nbinsE,bins);
+    bestfit = new TH1D("bestfit","",nbinsE,bins);
   }
 
   Pred.resize(npoints+1);
