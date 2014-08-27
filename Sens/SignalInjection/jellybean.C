@@ -43,6 +43,7 @@ TGraph2D * chisqSurf;
 TGraph * fiveSigma;
 TGraph * threeSigma;
 TGraph * ninety;
+TGraph * bestFits;
 TMarker * signalPt;
 TMarker * bestFit;
 
@@ -56,7 +57,7 @@ TH1D *bestfit;
 
 
 bool use100m, use470m, use700m;
-bool drawSurf, drawSmear, drawScale;
+bool drawSurf, drawSmear, drawScale, smearBestFit, drawBestFitPlot;
 bool shape_only;
 
 double predSig[2];
@@ -89,13 +90,14 @@ int multiple_detector_fit(){
   std::string mode = "nu";	//beam mode to run in
   use100m = true;		//Include the detector at 100m?
   use470m = true;		//Include the detector at 470m?
-  use700m = false;		//Include the detector at 700m?
+  use700m = true;		//Include the detector at 700m?
 
   shape_only = true;
   bool smear = true;
+  bool iterate = true;
   bool exclude = true;
 
-  double signal[2] = {.015,0.5};	//Injected signal, in form (sin22t,dm2)
+  double signal[2] = {.015,2.5};	//Injected signal, in form (sin22t,dm2)
 
   // Chisq Surface(testing)
   drawSurf = false;
@@ -106,9 +108,16 @@ int multiple_detector_fit(){
   predSig[1] = 1.2;		// prediction Vector dm2
 
   // Smearing Histogram
-  drawSmear = true;
+  drawSmear = false;
+  smearBestFit = false;
+
+  // Plot of Best Fit Points
+  drawBestFitPlot = true;
+  int bestFitIterations = 500;
 
   // ---------------------------------------------------------
+
+  if(!smear) iterate = false;
 
   std::vector<std::string> baselines;
   if (use100m) baselines.push_back("100m");
@@ -122,7 +131,7 @@ int multiple_detector_fit(){
   }
 
   if( use100m &&  use470m && !use700m){POT_weight[0] = 0.23895; POT_weight[1] = 1.23895;}
-  if( use100m && !use470m &&  use700m){POT_weight[0] = 1; POT_weight[1] = 1;}
+  if( use100m && !use470m &&  use700m){POT_weight[0] = 1; 	POT_weight[1] = 1;}
   if( use100m &&  use470m &&  use700m){POT_weight[0] = 1;       POT_weight[1] = 2;       POT_weight[2] = 1;}
   if(!use100m &&  use470m && !use700m){POT_weight[0] = 1;}
 
@@ -212,33 +221,44 @@ int multiple_detector_fit(){
   //When the file goes out of scope, the histo dies and your code will seg fault.
 
 
-  double chi_current, chiLow;
-
-// Build the prediction and signal vectors
-  build_vectors(nL, nbinsE, signal[0], signal[1], smear);
-
-// Build the covariance matrix
-  update_cov(nbinsE, nL, false);
-
-// Calculate chisquared for the first time.
-  chiLow = chisq_calc(nL,nbinsE);
-  std::cout << "... chisq = " << chiLow << "..." << std::endl;
-
-// Iteration
-  for(int iter = 0; iter < 10; iter++){
-    update_cov(nbinsE, nL, true);
-    chi_current = chisq_calc(nL,nbinsE);
-    std::cout << "... chisq = " << chi_current << "..." << std::endl;
-    if(abs(chi_current - chiLow) < .002){
-      chiLow = chi_current;
-      break;
+  if(!drawBestFitPlot){
+    double chi_current, chiLow;
+    // Build the prediction and signal vectors
+    build_vectors(nL, nbinsE, signal[0], signal[1], smear);
+    // Build the covariance matrix
+    update_cov(nbinsE, nL, false);
+    // Calculate chisquared for the first time.
+    chiLow = chisq_calc(nL,nbinsE);
+    std::cout << "... chisq = " << chiLow << "..." << std::endl;
+    // Iteration
+    if(iterate){
+      for(int iter = 0; iter < 10; iter++){
+        update_cov(nbinsE, nL, true);
+        chi_current = chisq_calc(nL,nbinsE);
+        std::cout << "... chisq = " << chi_current << "..." << std::endl;
+        if(abs(chi_current - chiLow) < .002){
+          chiLow = chi_current;
+          break;
+        }
+        else if(iter == 9)	std::cout << "No convergence of best fit in 10 tries. Sorry." << std::endl;
+        chiLow = chi_current;
+      }
     }
-    else if(iter == 9)	std::cout << "No convergence of best fit in 10 tries. Sorry." << std::endl;
-    chiLow = chi_current;
+    // Then, draw the jellybeans!
+    draw_jellybeans(chiLow, exclude);
   }
-
-// Then, draw the jellybeans!
-  draw_jellybeans(chiLow, exclude);
+  else{
+    bestFits = new TGraph();
+    for(int i = 0; i < bestFitIterations; i ++){
+      build_vectors(nL, nbinsE, signal[0],signal[1],smear);
+      update_cov(nbinsE,nL,false);
+      chisq_calc(nL,nbinsE);
+      update_cov(nbinsE, nL, true);
+      chisq_calc(nL,nbinsE);
+      bestFits->SetPoint(i,bestFit->GetX(),bestFit->GetY());
+      std::cout << "............................." << (i+1) << "/" << bestFitIterations << "............................." << std::endl;
+    }
+  }
 
 // Print Chisq Surface!
   if(drawSurf){
@@ -283,7 +303,7 @@ int multiple_detector_fit(){
 
   }
 
-  // Draw Scale Plot
+// Draw Scale Plot
   if(drawScale){
     TCanvas* c5 = new TCanvas("c5","Scale Plot",700,700);
     c5->SetLeftMargin(.15);
@@ -332,7 +352,7 @@ int multiple_detector_fit(){
     legS->Draw();
   }
 
-  // Draw Smear Plot
+// Draw Smear Plot
   if(drawSmear){
     TCanvas* c6 = new TCanvas("c6","Smear Plot",700,700);
     c6->SetLeftMargin(.15);
@@ -364,7 +384,7 @@ int multiple_detector_fit(){
     legS->SetTextSize(0.02);
     legS->AddEntry(unsmeared,TString::Format("Unsmeared Signal : (%4.2f eV^{2}, %0.3f)",signal[1],signal[0]),"f");
     legS->AddEntry(smeared,TString::Format("Smeared Signal : (%4.2f eV^{2}, %0.3f)",signal[1],signal[0]),"fep");//"Smeared Signal","fep");
-    legS->AddEntry(bestfit,TString::Format("#chi#lower[-0.3]{2} Best Fit : (%4.2f eV^{2}, %0.3f)",getDMpt(bestFitReso[1],false),getSin22THpt(bestFitReso[0],false)),"fep");
+    if(smearBestFit)  legS->AddEntry(bestfit,TString::Format("#chi#lower[-0.3]{2} Best Fit : (%4.2f eV^{2}, %0.3f)",getDMpt(bestFitReso[1],false),getSin22THpt(bestFitReso[0],false)),"fep");
     //TString::Format("100*((%f)*pow(TMath::Sin((1.267)*(%f)*(.001*x/%f)),2))",sin2,m2,energy)
 
     unsmeared->SetLineColor(0);
@@ -376,17 +396,113 @@ int multiple_detector_fit(){
     smeared->SetMarkerSize(0.5);
     smeared->SetMarkerStyle(kOpenCircle);
 
-    bestfit->SetLineWidth(2);
-    bestfit->SetLineColor(kRed);
-    bestfit->SetMarkerColor(kRed);
-    bestfit->SetMarkerSize(0.5);
-    bestfit->SetMarkerStyle(kOpenCircle);
+    if(smearBestFit){
+      bestfit->SetLineWidth(2);
+      bestfit->SetLineColor(kRed);
+      bestfit->SetMarkerColor(kRed);
+      bestfit->SetMarkerSize(0.5);
+      bestfit->SetMarkerStyle(kOpenCircle);
+    }
 
     unsmeared->Draw("h");
     smeared->Draw("ep same");
-    bestfit->Draw("p same");
+    if(smearBestFit) bestfit->Draw("p same");
 
     legS->Draw();
+  }
+
+// Draw Best Fit Plot
+  if(drawBestFitPlot){
+    bestFits->SetMarkerColor(kYellow);	bestFits->SetMarkerStyle(7);
+    printf("\nDrawing best fits...\n");
+
+    TCanvas* c9 = new TCanvas("c3","BestFits",700,700);
+    c9->SetLeftMargin(.15);
+    c9->SetBottomMargin(.15);
+    c9->SetTopMargin(.05);
+    c9->SetRightMargin(.05);
+    c9->SetLogx();
+    c9->SetLogy();
+
+    TH2D* hr1=new TH2D("hr1","hr1",500,sin22thmin*10,sin22thmax,500,dm2min+0.0001,dm2max);
+    hr1->Reset();
+    hr1->SetFillColor(0);
+    hr1->SetTitle(";sin^{2}2#theta#lower[0.4]{#mu#kern[-0.3]{#mu}};#Deltam_{41}^{2} [eV^{2}]");
+    hr1->GetXaxis()->SetTitleOffset(1.2);
+    hr1->GetYaxis()->SetTitleOffset(1.2);
+    hr1->GetXaxis()->SetTitleFont(62);
+    hr1->GetYaxis()->SetTitleFont(62);
+    hr1->GetYaxis()->CenterTitle();
+    hr1->GetXaxis()->CenterTitle();
+    hr1->GetXaxis()->SetTitleSize(0.05);
+    hr1->GetXaxis()->SetLabelSize(0.04);
+    hr1->GetXaxis()->SetLabelOffset(0.001);
+    hr1->GetYaxis()->SetTitleSize(0.05);
+    hr1->GetYaxis()->SetLabelSize(0.04);
+    hr1->SetStats(kFALSE);
+    hr1->Draw();
+
+    bestFits->Draw("psame");
+    signalPt->Draw("psame");
+    c9->RedrawAxis();
+
+    std::string det_str = "#splitline{";
+    if(use100m && !use700m) det_str += "LAr1-ND (1.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}{";    
+    else if(use100m && use700m) det_str +=  "LAr1-ND (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}{";    
+    else det_str += "}{";                                          
+    if(use470m && !use700m && use100m) det_str += "and MicroBooNE (8.2 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
+    else if(use470m && use700m) det_str += "MicroBooNE (1.3 #times 10#lower[-0.5]{#scale[0.75]{21}} POT) and T600 (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
+    else if(!use470m && use700m) det_str += "and T600 (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
+    else if(use470m && !use700m && !use100m) det_str += "MicroBooNE (6.6 #times 10#lower[-0.5]{#scale[0.75]{20}} POT)}";
+    else det_str += "}";
+
+    TLatex *tex_Detector = new TLatex(.2,.23,det_str.c_str());
+    tex_Detector->SetNDC();
+    tex_Detector->SetTextFont(62);
+    tex_Detector->SetTextSize(0.025);
+    tex_Detector->Draw(); 
+
+    TLatex *tex_pre = new TLatex(.18,.74,"PRELIMINARY");
+    tex_pre->SetNDC();
+    tex_pre->SetTextFont(62);
+    tex_pre->SetTextColor(kRed-3);
+    tex_pre->SetTextSize(0.03);
+    tex_pre->Draw();
+
+    TLatex *tex_mode = new TLatex(.18,.92,"#nu mode, CC Events");
+    tex_mode->SetNDC();
+    tex_mode->SetTextFont(62);
+    tex_mode->SetTextSize(0.025);
+    tex_mode->Draw();
+
+    TLatex *tex_un = new TLatex(.18,.89,"Statistical and Flux Uncertainty");
+    tex_un->SetNDC();
+    tex_un->SetTextFont(62);
+    tex_un->SetTextSize(0.025);
+    tex_un->Draw();
+
+    TLatex *tex_E = new TLatex(.18,.86,"Reconstructed Energy");
+    tex_E->SetNDC();
+    tex_E->SetTextFont(62);
+    tex_E->SetTextSize(0.025);
+    tex_E->Draw();
+
+    TLatex *tex_eff = new TLatex(.18,.83,"80% #nu#lower[0.4]{#mu} Efficiency");
+    tex_eff->SetNDC();
+    tex_eff->SetTextFont(62);
+    tex_eff->SetTextSize(0.025);
+    tex_eff->Draw();
+
+    std::string str_signal;
+    if(shape_only) str_signal = "Shape Only Analysis";
+    else str_signal = "Shape and Rate Analysis";
+    TLatex *tex_Signal = new TLatex(.18,.785,str_signal.c_str());
+    tex_Signal->SetNDC();
+    tex_Signal->SetTextFont(62);
+    tex_Signal->SetTextSize(0.025);
+    tex_Signal->Draw();
+
+    c9->Print("bestFitTest500.png");
   }
 
   return 0;
