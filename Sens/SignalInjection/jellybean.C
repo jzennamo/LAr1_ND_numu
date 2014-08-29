@@ -751,11 +751,11 @@ int draw_jellybeans(double chiLow, bool exclude){
     for(int sint = 0; sint < npoints; sint ++){
       chisq = chisqArray[dm2 * (npoints + 1) + sint];
 
-      if(chisq <= 1.64 + chiLow){
+      if(chisq <= 4.61 + chiLow){
 	ninety->SetPoint(ninetyCounter,getSin22THpt(sint,false),getDMpt(dm2,false));
 	ninetyCounter++;
       }
-      if(chisq <= 9 + chiLow){
+      if(chisq <= 11.83 + chiLow){
         threeSigma->SetPoint(threeSCounter,getSin22THpt(sint, false),getDMpt(dm2, false));
         if(exclude){
           if(dm2 == 0)	threeExcludeS = 1;
@@ -765,7 +765,7 @@ int draw_jellybeans(double chiLow, bool exclude){
         }
         threeSCounter++;
       }
-      if(chisq <= 25 + chiLow) {
+      if(chisq <= 28.23 + chiLow) {
 	fiveSigma->SetPoint(fiveSCounter,getSin22THpt(sint, false),getDMpt(dm2, false));
 	if(exclude){
 	  if(dm2 == 0)	fiveExcludeS = 1;

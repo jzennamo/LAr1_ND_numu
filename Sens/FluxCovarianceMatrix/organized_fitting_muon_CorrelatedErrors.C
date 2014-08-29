@@ -415,7 +415,7 @@ int multiple_detector_fit()
 	
 	//Fitting variables
 	Double_t chisq;
-	Double_t deltachisq90=1.64, deltachisq3s=9.00, deltachisq5s=25.00, deltachisq99=2.58;
+	Double_t deltachisq90=1.64, deltachisq3s=7.74, deltachisq5s=23.40, deltachisq99=5.41;
 	
 	//output ntuple with chi2 values and sensitivity contour	
 	TH1D* ND_null_lmls = new TH1D("ND_null_lmls", "", nbinsE, bins);
